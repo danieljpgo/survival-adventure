@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { debug } from "~/lib/debug";
 
 export class Game extends Phaser.Scene {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -22,11 +23,14 @@ export class Game extends Phaser.Scene {
     const walls = map.createLayer("Walls", tileset);
     if (!walls) throw new Error("Walls layer not found");
 
+    walls.setCollisionByProperty({ collides: true });
+
     this.hero = this.physics.add.sprite(100, 60, "hero", "walk-down-0.png");
     if (!this.hero.body) throw new Error("Hero body not found");
 
     this.hero.body.setSize(this.hero.width, this.hero.height - 16);
     this.physics.add.collider(this.hero, walls);
+    this.cameras.main.startFollow(this.hero);
 
     this.anims.create({
       key: "hero-idle-down",
@@ -89,12 +93,8 @@ export class Game extends Phaser.Scene {
       frameRate: 8,
     });
 
-    walls.setCollisionByProperty({ collides: true });
-    // walls.renderDebug(this.add.graphics().setAlpha(0.5), {
-    //   tileColor: null,
-    //   faceColor: new Phaser.Display.Color(40, 39, 37, 255),
-    //   collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255),
-    // });
+    // Debug
+    // walls.renderDebug(debug.graphics(this), debug.styles);
   }
 
   update(totalTime: number, deltaTime: number) {
@@ -121,8 +121,9 @@ export class Game extends Phaser.Scene {
       this.hero.setVelocity(0, speed);
       return;
     }
-
-    this.hero.anims.play("hero-idle-down", true);
+    const currentDirection =
+      this.hero.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+    this.hero.anims.play(`hero-idle-${currentDirection}`, true);
     this.hero.setVelocity(0, 0);
 
     // this.hero.anims.play("hero-walk-down");

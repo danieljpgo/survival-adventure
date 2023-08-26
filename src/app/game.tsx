@@ -20,7 +20,7 @@ export default function GameContainer() {
           // debug: true,
         },
       },
-      scale: { zoom: 3.7 },
+      scale: { zoom: 2 },
     });
     // @TODO verificar se precisar remover a instancia
     return () => {
