@@ -17,7 +17,6 @@ export class Game extends Phaser.Scene {
     if (!walls) throw new Error("Walls layer not found");
 
     walls.setCollisionByProperty({ collides: true });
-
     walls.renderDebug(this.add.graphics().setAlpha(0.5), {
       tileColor: null,
       faceColor: new Phaser.Display.Color(40, 39, 37, 255),
@@ -27,5 +26,3 @@ export class Game extends Phaser.Scene {
 
   update() {}
 }
-
-// map.createStaticLayer => map.createLayer
