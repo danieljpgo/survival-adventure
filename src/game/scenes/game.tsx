@@ -1,11 +1,18 @@
 import Phaser from "phaser";
 
 export class Game extends Phaser.Scene {
+  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  private hero?: Phaser.Physics.Arcade.Sprite;
+
   constructor() {
     super("game");
   }
 
-  preload() {}
+  preload() {
+    if (!this.input.keyboard) throw new Error("Keyboard Input not found");
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+  }
 
   create() {
     const map = this.make.tilemap({ key: "world" });
@@ -23,11 +30,23 @@ export class Game extends Phaser.Scene {
     //   collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255),
     // });
 
-    const hero = this.add.sprite(100, 60, "hero", "walk-down-0.png");
+    this.hero = this.physics.add.sprite(100, 60, "hero", "walk-down-0.png");
 
     this.anims.create({
       key: "hero-idle-down",
       frames: [{ key: "hero", frame: "walk-down-0.png" }],
+    });
+    this.anims.create({
+      key: "hero-idle-up",
+      frames: [{ key: "hero", frame: "walk-up-0.png" }],
+    });
+    this.anims.create({
+      key: "hero-idle-left",
+      frames: [{ key: "hero", frame: "walk-left-0.png" }],
+    });
+    this.anims.create({
+      key: "hero-idle-right",
+      frames: [{ key: "hero", frame: "walk-right-0.png" }],
     });
     this.anims.create({
       key: "hero-walk-down",
@@ -73,13 +92,43 @@ export class Game extends Phaser.Scene {
       repeat: -1,
       frameRate: 8,
     });
-
-    hero.anims.play("hero-walk-idle");
-    // hero.anims.play("hero-walk-down");
-    // hero.anims.play("hero-walk-up");
-    // hero.anims.play("hero-walk-left");
-    // hero.anims.play("hero-walk-right");
   }
 
-  update() {}
+  update(totalTime: number, deltaTime: number) {
+    if (!this.cursors || !this.hero) return;
+
+    const speed = 100;
+    if (this.cursors.left.isDown) {
+      this.hero.anims.play("hero-walk-left", true);
+      this.hero.setVelocity(-speed, 0);
+      return;
+    }
+    if (this.cursors.right.isDown) {
+      this.hero.anims.play("hero-walk-right", true);
+      this.hero.setVelocity(speed, 0);
+      return;
+    }
+    if (this.cursors.up.isDown) {
+      this.hero.anims.play("hero-walk-up", true);
+      this.hero.setVelocity(0, -speed);
+      return;
+    }
+    if (this.cursors.down.isDown) {
+      this.hero.anims.play("hero-walk-down", true);
+      this.hero.setVelocity(0, speed);
+      return;
+    }
+
+    this.hero.anims.play("hero-idle-down", true);
+    this.hero.setVelocity(0, 0);
+
+    // this.hero.anims.play("hero-walk-down");
+    // this.hero.anims.play("hero-walk-up");
+    // this.hero.anims.play("hero-walk-right");
+
+    // hero.anims.play("hero-idle-left");
+    // hero.anims.play("hero-idle-right");
+    // hero.anims.play("hero-idle-up");
+    // this.hero.anims.play("hero-idle-down");
+  }
 }
