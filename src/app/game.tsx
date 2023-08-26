@@ -15,7 +15,10 @@ export default function GameContainer() {
       height: 260,
       physics: {
         default: "arcade",
-        arcade: { gravity: { y: 0 } },
+        arcade: {
+          gravity: { y: 0 },
+          // debug: true,
+        },
       },
       scale: { zoom: 3.7 },
     });
