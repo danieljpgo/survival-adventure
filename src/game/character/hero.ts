@@ -3,9 +3,19 @@ import Phaser from "phaser";
 export const HERO = {
   SPAWN: { X: 100, Y: 60 },
   SPEED: 100,
+  IFRAME_DURATION: 250,
+} as const;
+
+export const HEALTH_STATE = {
+  IDLE: "idle",
+  DAMAGE: "damage",
 } as const;
 
 export class Hero extends Phaser.Physics.Arcade.Sprite {
+  private iframe = 0;
+  private healthState: (typeof HEALTH_STATE)[keyof typeof HEALTH_STATE] =
+    HEALTH_STATE.IDLE; //TODO improve naming
+
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -23,7 +33,30 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(this.width, this.height - this.height / 2);
   }
 
+  preUpdate(time: number, delta: number) {
+    super.preUpdate(time, delta);
+
+    switch (this.healthState) {
+      case HEALTH_STATE.IDLE:
+        break;
+      case HEALTH_STATE.DAMAGE:
+        this.iframe += delta;
+        if (this.iframe < HERO.IFRAME_DURATION) return;
+
+        this.healthState = HEALTH_STATE.IDLE;
+        this.setTint(0xffffff);
+        this.iframe = 0;
+        break;
+
+      default:
+        break;
+    }
+  }
+
   update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
+    // Prevent movement when taking damage
+    if (this.healthState === HEALTH_STATE.DAMAGE) return;
+
     if (cursors.left.isDown) {
       this.anims.play("hero-walk-left", true);
       this.setVelocity(-HERO.SPEED, 0);
@@ -45,10 +78,36 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
       return;
     }
 
-    const currentDirection =
-      this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
-    this.anims.play(`hero-idle-${currentDirection}`, true);
+    const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+    this.anims.play(`hero-idle-${direction}`, true);
     this.setVelocity(0, 0);
+  }
+
+  handleDamage(
+    hero: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
+    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
+  ) {
+    // Prevent taking damage if already taking damage
+    if (this.healthState === HEALTH_STATE.DAMAGE) return;
+
+    if (!("x" in enemy)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
+    if (!("x" in hero)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
+
+    const knockback = {
+      x: hero.x - enemy.x,
+      y: hero.y - enemy.y,
+    };
+    const nextPosition = new Phaser.Math.Vector2(knockback.x, knockback.y)
+      .normalize()
+      .scale(200);
+
+    const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+    this.anims.play(`hero-idle-${direction}`, true);
+
+    this.healthState = HEALTH_STATE.DAMAGE;
+    this.setVelocity(nextPosition.x, nextPosition.y);
+    this.setTint(0xff0000);
+    this.iframe = 0;
   }
 }
 

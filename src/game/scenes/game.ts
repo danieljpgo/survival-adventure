@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { Log, createLogAnims } from "../enemies/log";
-import { HERO, Hero, createHeroAnims } from "../character/hero";
+import { Hero, createHeroAnims, HERO } from "../character/hero";
 import { debug } from "~/lib/debug";
 
 export class Game extends Phaser.Scene {
@@ -44,7 +44,7 @@ export class Game extends Phaser.Scene {
     this.physics.add.collider(
       enemies,
       this.hero,
-      this.handlePlayerEnemyCollision,
+      this.hero.handleDamage,
       undefined,
       this
     );
@@ -54,14 +54,9 @@ export class Game extends Phaser.Scene {
   }
 
   update(total: number, delta: number) {
+    if (!this.hero) throw new Error("Hero not found");
     if (!this.cursors) throw new Error("Cursors not found");
-    if (!this.hero) throw new Error("Cursors not found");
 
     this.hero.update(this.cursors);
   }
-
-  private handlePlayerEnemyCollision(
-    hero: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
-  ) {}
 }

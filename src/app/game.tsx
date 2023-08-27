@@ -1,8 +1,8 @@
 "use client";
 import { useEffect } from "react";
 import Phaser from "phaser";
-import { GridEngine, GridEngineHeadless } from "grid-engine";
 import { Preloader, Game } from "~/game/scenes";
+// import { GridEngine, GridEngineHeadless } from "grid-engine";
 
 export default function GameContainer() {
   useEffect(() => {
