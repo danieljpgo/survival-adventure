@@ -6,7 +6,7 @@ import { Preloader, Game } from "~/game/scenes";
 
 export default function GameContainer() {
   useEffect(() => {
-    console.log("> Phaser.Game");
+    console.log("> new Phaser.Game");
 
     const game = new Phaser.Game({
       parent: "game-container",
@@ -17,10 +17,10 @@ export default function GameContainer() {
         default: "arcade",
         arcade: {
           gravity: { y: 0 },
-          // debug: true,
+          debug: true,
         },
       },
-      scale: { zoom: 2 },
+      scale: { zoom: 3.8 },
     });
     // @TODO verificar se precisar remover a instancia
     return () => {

@@ -61,7 +61,7 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  destroy(fromScene?: boolean): void {
+  destroy(fromScene?: boolean) {
     this.timer.destroy();
     this.event.destroy();
     super.destroy(fromScene);
