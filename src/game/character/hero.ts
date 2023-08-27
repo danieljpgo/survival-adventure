@@ -1,10 +1,58 @@
-// TODO improve here
+import Phaser from "phaser";
 
 export const HERO = {
   SPAWN: { X: 100, Y: 60 },
   SPEED: 100,
 } as const;
 
+export class Hero extends Phaser.Physics.Arcade.Sprite {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    texture: string | Phaser.Textures.Texture,
+    frame?: string | number
+  ) {
+    super(scene, x, y, texture, frame);
+    this.anims.play("hero-idle-down");
+
+    scene.add.existing(this);
+    scene.physics.add.existing(this);
+
+    if (!this.body) throw new Error("Hero body not found");
+    this.body.setSize(this.width, this.height - this.height / 2);
+  }
+
+  update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
+    if (cursors.left.isDown) {
+      this.anims.play("hero-walk-left", true);
+      this.setVelocity(-HERO.SPEED, 0);
+      return;
+    }
+    if (cursors.right.isDown) {
+      this.anims.play("hero-walk-right", true);
+      this.setVelocity(HERO.SPEED, 0);
+      return;
+    }
+    if (cursors.up.isDown) {
+      this.anims.play("hero-walk-up", true);
+      this.setVelocity(0, -HERO.SPEED);
+      return;
+    }
+    if (cursors.down.isDown) {
+      this.anims.play("hero-walk-down", true);
+      this.setVelocity(0, HERO.SPEED);
+      return;
+    }
+
+    const currentDirection =
+      this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+    this.anims.play(`hero-idle-${currentDirection}`, true);
+    this.setVelocity(0, 0);
+  }
+}
+
+// TODO improve here
 export function createHeroAnims(anims: Phaser.Animations.AnimationManager) {
   anims.create({
     key: "hero-idle-down",

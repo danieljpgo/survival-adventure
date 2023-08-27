@@ -18,6 +18,16 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, texture, frame);
     this.anims.play("log-sleep");
 
+    scene.add.existing(this);
+    scene.physics.add.existing(this);
+
+    if (!this.body) throw new Error("Log body not found");
+    this.body.onCollide = true;
+    this.body.setSize(
+      this.body.width - this.body.width / 2,
+      this.body.height - this.body.height / 2
+    );
+
     this.event = scene.physics.world.on(
       Phaser.Physics.Arcade.Events.TILE_COLLIDE,
       this.handleTileCollide,
@@ -27,6 +37,7 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
       delay: 4000,
       loop: true,
       callback: () => {
+        // Random direction
         const nextDirection = Object.values(DIRECTION)?.at(
           Phaser.Math.Between(0, 3)
         );
@@ -68,6 +79,7 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
   }
 
   private handleTileCollide() {
+    // Random direction
     const nextDirection = Object.values(DIRECTION)?.at(
       Phaser.Math.Between(0, 3)
     );
