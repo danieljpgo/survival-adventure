@@ -44,7 +44,7 @@ export class Game extends Phaser.Scene {
     this.physics.add.collider(
       enemies,
       this.hero,
-      this.hero.handleDamage,
+      this.handleHeroEnemyCollision,
       undefined,
       this
     );
@@ -58,5 +58,16 @@ export class Game extends Phaser.Scene {
     if (!this.cursors) throw new Error("Cursors not found");
 
     this.hero.update(this.cursors);
+  }
+
+  private handleHeroEnemyCollision(
+    hero: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
+    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
+  ) {
+    if (!this.hero) throw new Error("Hero not found");
+    if (!("x" in enemy)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
+    if (!("x" in hero)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
+
+    this.hero.handleDamage(hero, enemy);
   }
 }

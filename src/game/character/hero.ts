@@ -83,15 +83,9 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(0, 0);
   }
 
-  handleDamage(
-    hero: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
-  ) {
+  handleDamage(hero: Phaser.Tilemaps.Tile, enemy: Phaser.Tilemaps.Tile) {
     // Prevent taking damage if already taking damage
     if (this.healthState === HEALTH_STATE.DAMAGE) return;
-
-    if (!("x" in enemy)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
-    if (!("x" in hero)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
 
     const knockback = {
       x: hero.x - enemy.x,
