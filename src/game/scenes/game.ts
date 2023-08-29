@@ -2,10 +2,13 @@ import Phaser from "phaser";
 import { Log, createLogAnims } from "../enemies/log";
 import { Hero, createHeroAnims, HERO } from "../character/hero";
 import { debug } from "~/lib/debug";
+import { HUD } from "../config/constants";
+import { events } from "../config/events";
 
 export class Game extends Phaser.Scene {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private hero?: Hero;
+  private heroEnemiesCollider?: Phaser.Physics.Arcade.Collider;
 
   constructor() {
     super("game");
@@ -18,6 +21,8 @@ export class Game extends Phaser.Scene {
   }
 
   create() {
+    this.scene.run("hud");
+
     //TODO improve here
     createHeroAnims(this.anims);
     createLogAnims(this.anims);
@@ -41,7 +46,7 @@ export class Game extends Phaser.Scene {
     this.cameras.main.startFollow(this.hero);
     this.physics.add.collider(this.hero, walls);
     this.physics.add.collider(enemies, walls);
-    this.physics.add.collider(
+    this.heroEnemiesCollider = this.physics.add.collider(
       enemies,
       this.hero,
       this.handleHeroEnemyCollision,
@@ -69,5 +74,10 @@ export class Game extends Phaser.Scene {
     if (!("x" in hero)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
 
     this.hero.handleDamage(hero, enemy);
+
+    events.scene.emit(HUD.HERO_HEALTH_CHANGED, this.hero.getHealth);
+    if (this.hero.getHealth === 0) {
+      this.heroEnemiesCollider?.destroy();
+    }
   }
 }

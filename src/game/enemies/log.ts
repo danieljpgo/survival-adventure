@@ -4,9 +4,9 @@ import { type Direction, DIRECTION } from "../config/constants";
 export const LOG = { SPEED: 50 } as const;
 
 export class Log extends Phaser.Physics.Arcade.Sprite {
+  private direction: Direction = DIRECTION.DOWN;
   private event: Phaser.Events.EventEmitter;
   private timer: Phaser.Time.TimerEvent;
-  private direction: Direction = DIRECTION.DOWN;
 
   constructor(
     scene: Phaser.Scene,

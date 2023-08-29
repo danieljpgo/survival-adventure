@@ -4,15 +4,18 @@ export const HERO = {
   SPAWN: { X: 100, Y: 60 },
   SPEED: 100,
   IFRAME_DURATION: 250,
+  HEARTS: 3,
 } as const;
 
 export const HEALTH_STATE = {
   IDLE: "idle",
   DAMAGE: "damage",
+  DEAD: "dead",
 } as const;
 
 export class Hero extends Phaser.Physics.Arcade.Sprite {
   private iframe = 0;
+  private health: number = HERO.HEARTS * 4;
   private healthState: (typeof HEALTH_STATE)[keyof typeof HEALTH_STATE] =
     HEALTH_STATE.IDLE; //TODO improve naming
 
@@ -33,12 +36,13 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(this.width, this.height - this.height / 2);
   }
 
+  public get getHealth() {
+    return this.health;
+  }
+
   preUpdate(time: number, delta: number) {
     super.preUpdate(time, delta);
-
     switch (this.healthState) {
-      case HEALTH_STATE.IDLE:
-        break;
       case HEALTH_STATE.DAMAGE:
         this.iframe += delta;
         if (this.iframe < HERO.IFRAME_DURATION) return;
@@ -47,7 +51,12 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
         this.setTint(0xffffff);
         this.iframe = 0;
         break;
-
+      case HEALTH_STATE.IDLE:
+        // TODO
+        break;
+      case HEALTH_STATE.DEAD:
+        // TODO
+        break;
       default:
         break;
     }
@@ -56,6 +65,8 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
   update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
     // Prevent movement when taking damage
     if (this.healthState === HEALTH_STATE.DAMAGE) return;
+    // Prevent movement when hero is dead
+    if (this.healthState === HEALTH_STATE.DEAD) return;
 
     if (cursors.left.isDown) {
       this.anims.play("hero-walk-left", true);
@@ -96,12 +107,21 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
       .scale(200);
 
     const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
-    this.anims.play(`hero-idle-${direction}`, true);
-
-    this.healthState = HEALTH_STATE.DAMAGE;
-    this.setVelocity(nextPosition.x, nextPosition.y);
-    this.setTint(0xff0000);
     this.iframe = 0;
+    this.health = this.health - 1;
+
+    if (this.health !== 0) {
+      this.anims.play(`hero-idle-${direction}`, true);
+      this.healthState = HEALTH_STATE.DAMAGE;
+      this.setVelocity(nextPosition.x, nextPosition.y);
+      this.setTint(0xff0000);
+      return;
+    }
+
+    this.anims.play(`hero-dead-${direction}`, true);
+    this.healthState = HEALTH_STATE.DEAD;
+    this.setVelocity(0, 0);
+    this.setTint(0xffffff);
   }
 }
 
@@ -167,5 +187,46 @@ export function createHeroAnims(anims: Phaser.Animations.AnimationManager) {
     }),
     repeat: -1,
     frameRate: 8,
+  });
+
+  anims.create({
+    key: "hero-dead-right",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 1,
+      prefix: "dead-right-",
+      suffix: ".png",
+    }),
+    frameRate: 2,
+  });
+  anims.create({
+    key: "hero-dead-left",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 1,
+      prefix: "dead-left-",
+      suffix: ".png",
+    }),
+    frameRate: 2,
+  });
+  anims.create({
+    key: "hero-dead-up",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 1,
+      prefix: "dead-up-",
+      suffix: ".png",
+    }),
+    frameRate: 2,
+  });
+  anims.create({
+    key: "hero-dead-down",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 1,
+      prefix: "dead-down-",
+      suffix: ".png",
+    }),
+    frameRate: 2,
   });
 }

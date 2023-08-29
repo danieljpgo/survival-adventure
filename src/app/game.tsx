@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import Phaser from "phaser";
-import { Preloader, Game } from "~/game/scenes";
+import { Preloader, Game, Hud } from "~/game/scenes";
 // import { GridEngine, GridEngineHeadless } from "grid-engine";
 
 export default function GameContainer() {
@@ -10,7 +10,7 @@ export default function GameContainer() {
 
     const game = new Phaser.Game({
       parent: "game-container",
-      scene: [Preloader, Game],
+      scene: [Preloader, Game, Hud],
       width: 460,
       height: 260,
       physics: {
@@ -20,7 +20,7 @@ export default function GameContainer() {
           debug: true,
         },
       },
-      scale: { zoom: 3.8 },
+      scale: { zoom: 3.5 },
     });
     // @TODO verificar se precisar remover a instancia
     return () => {

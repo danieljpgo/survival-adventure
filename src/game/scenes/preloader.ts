@@ -18,6 +18,11 @@ export class Preloader extends Phaser.Scene {
       "assets/enemies/log/texture.png",
       "assets/enemies/log/texture.json"
     );
+    this.load.atlas(
+      "hud-hearts",
+      "assets/hud/hearts.png",
+      "assets/hud/hearts.json"
+    );
   }
   create() {
     this.scene.start("game");

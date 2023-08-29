@@ -6,3 +6,7 @@ export const DIRECTION = {
   LEFT: "left",
   RIGHT: "right",
 } as const;
+
+export const HUD = {
+  HERO_HEALTH_CHANGED: "hero-health-changed",
+};
