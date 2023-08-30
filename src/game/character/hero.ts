@@ -18,6 +18,7 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
   private health: number = HERO.HEARTS * 4;
   private healthState: (typeof HEALTH_STATE)[keyof typeof HEALTH_STATE] =
     HEALTH_STATE.IDLE; //TODO improve naming
+  private knives?: Phaser.Physics.Arcade.Group;
 
   constructor(
     scene: Phaser.Scene,
@@ -38,6 +39,10 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
 
   public get getHealth() {
     return this.health;
+  }
+
+  setKnives(knives: Phaser.Physics.Arcade.Group) {
+    this.knives = knives;
   }
 
   preUpdate(time: number, delta: number) {
@@ -67,6 +72,12 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
     if (this.healthState === HEALTH_STATE.DAMAGE) return;
     // Prevent movement when hero is dead
     if (this.healthState === HEALTH_STATE.DEAD) return;
+
+    if (Phaser.Input.Keyboard.JustDown(cursors.shift)) {
+      this.throwKnife();
+
+      return;
+    }
 
     if (cursors.left.isDown) {
       this.anims.play("hero-walk-left", true);
@@ -122,6 +133,40 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
     this.healthState = HEALTH_STATE.DEAD;
     this.setVelocity(0, 0);
     this.setTint(0xffffff);
+  }
+
+  private throwKnife() {
+    if (!this.knives) throw new Error("Hero body not found");
+
+    const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+    const vec = new Phaser.Math.Vector2(0, 0);
+    if (direction === "up") {
+      vec.y = -1;
+    }
+    if (direction === "down") {
+      vec.y = 1;
+    }
+    if (direction === "left") {
+      vec.x = -1;
+    }
+    if (direction === "right") {
+      vec.x = 1;
+    }
+
+    const angle = vec.angle();
+    const knife = this.knives.get(
+      this.x,
+      this.y,
+      "weapons-knife"
+    ) as Phaser.Physics.Arcade.Image;
+
+    knife.setActive(true);
+    knife.setVisible(true);
+    knife.setRotation(angle);
+    knife.setVelocity(vec.x * 300, vec.y * 300);
+
+    knife.x = knife.x + vec.x * 8;
+    knife.y = knife.y + vec.y * 8;
   }
 }
 

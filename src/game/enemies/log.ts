@@ -48,6 +48,7 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
 
   preUpdate(time: number, delta: number) {
     super.preUpdate(time, delta);
+
     switch (this.direction) {
       case DIRECTION.LEFT:
         this.anims.play("log-walk-left", true);
@@ -89,6 +90,17 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
 
 // TODO improve here
 export function createLogAnims(anims: Phaser.Animations.AnimationManager) {
+  // anims.create({
+  //   key: "log-dead",
+  //   frames: anims.generateFrameNames("log", {
+  //     start: 0,
+  //     end: 3,
+  //     prefix: "sleep-",
+  //     suffix: ".png",
+  //   }),
+  //   frameRate: 8,
+  // });
+
   anims.create({
     key: "log-sleep",
     frames: anims.generateFrameNames("log", {

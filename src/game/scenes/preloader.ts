@@ -7,6 +7,7 @@ export class Preloader extends Phaser.Scene {
 
   preload() {
     this.load.image("tiles", "assets/tiles/overworld.png");
+    this.load.image("weapons-knife", "assets/weapons/knife.png");
     this.load.tilemapTiledJSON("world", "assets/tiles/world-01.json");
     this.load.atlas(
       "hero",
