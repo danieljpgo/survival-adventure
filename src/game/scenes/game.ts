@@ -2,11 +2,11 @@ import Phaser from "phaser";
 import { Log, createLogAnims } from "../enemies/log";
 import { Hero, createHeroAnims, HERO } from "../character/hero";
 import { debug } from "~/lib/debug";
-import { HUD } from "../config/constants";
+import { type KeyboardInput, HUD } from "../config/constants";
 import { events } from "../config/events";
 
 export class Game extends Phaser.Scene {
-  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  private cursors?: Record<KeyboardInput, Phaser.Input.Keyboard.Key>;
   private hero?: Hero;
   private heroEnemiesCollider?: Phaser.Physics.Arcade.Collider;
   private enemies?: Phaser.Physics.Arcade.Group;
@@ -19,7 +19,15 @@ export class Game extends Phaser.Scene {
   preload() {
     if (!this.input.keyboard) throw new Error("Keyboard Input not found");
 
-    this.cursors = this.input.keyboard.createCursorKeys();
+    this.cursors = {
+      ...this.input.keyboard.createCursorKeys(),
+      w: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      a: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      s: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+      d: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+      j: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J),
+      k: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K),
+    };
   }
 
   create() {

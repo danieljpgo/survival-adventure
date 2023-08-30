@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { KeyboardInput } from "../config/constants";
 
 export const HERO = {
   SPAWN: { X: 100, Y: 60 },
@@ -67,34 +68,36 @@ export class Hero extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
+  update(cursors: Record<KeyboardInput, Phaser.Input.Keyboard.Key>) {
     // Prevent movement when taking damage
     if (this.healthState === HEALTH_STATE.DAMAGE) return;
     // Prevent movement when hero is dead
     if (this.healthState === HEALTH_STATE.DEAD) return;
 
-    if (Phaser.Input.Keyboard.JustDown(cursors.shift)) {
+    if (
+      Phaser.Input.Keyboard.JustDown(cursors.shift) ||
+      Phaser.Input.Keyboard.JustDown(cursors.j)
+    ) {
       this.throwKnife();
 
       return;
     }
-
-    if (cursors.left.isDown) {
+    if (cursors.left.isDown || cursors.a.isDown) {
       this.anims.play("hero-walk-left", true);
       this.setVelocity(-HERO.SPEED, 0);
       return;
     }
-    if (cursors.right.isDown) {
+    if (cursors.right.isDown || cursors.d.isDown) {
       this.anims.play("hero-walk-right", true);
       this.setVelocity(HERO.SPEED, 0);
       return;
     }
-    if (cursors.up.isDown) {
+    if (cursors.up.isDown || cursors.w.isDown) {
       this.anims.play("hero-walk-up", true);
       this.setVelocity(0, -HERO.SPEED);
       return;
     }
-    if (cursors.down.isDown) {
+    if (cursors.down.isDown || cursors.s.isDown) {
       this.anims.play("hero-walk-down", true);
       this.setVelocity(0, HERO.SPEED);
       return;
