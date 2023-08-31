@@ -14,14 +14,14 @@ export default function GameContainer() {
       parent: "game-container",
       scene: [Preloader, Game],
       scale: {
-        zoom: 3,
+        zoom: 1,
         mode: Phaser.Scale.ScaleModes.NONE,
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: window.innerWidth / 2,
+        height: window.innerHeight / 2,
       },
       physics: {
         default: "arcade",
-        arcade: { debug: true },
+        // arcade: { debug: true },
       },
       render: {
         antialiasGL: false,

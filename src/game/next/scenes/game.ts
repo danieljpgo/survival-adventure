@@ -17,7 +17,8 @@ export class Game extends Phaser.Scene {
   create() {
     const map = this.initMap();
     this.player = new Player(this, 100, 100);
-    this.physics.add.collider(this.player, map.layers.walls);
+    this.initChests(map.value);
+    this.physics.add.collider(this.player, map.layer.walls);
   }
 
   update() {
@@ -48,7 +49,34 @@ export class Game extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, base.width, base.height);
 
     return {
-      layers: { base, ground, walls },
+      value: map,
+      layer: { base, ground, walls },
     };
+  }
+  private initChests(map: Phaser.Tilemaps.Tilemap) {
+    const chestPoints = map.filterObjects(
+      ASSETS.TILEMAP.LAYERS.CHESTS,
+      (obj) => obj.name === ASSETS.POINTS.CHESTS
+    );
+    const chests = chestPoints?.map((point) => {
+      if (!point.x || !point.y) throw new Error("ChestPoints not found");
+
+      return this.physics.add.sprite(
+        point.x,
+        point.y,
+        ASSETS.SPRITESHEET.KEY,
+        0
+      );
+    });
+
+    if (!chests) throw new Error("Chests not found");
+    chests.forEach((chest) => {
+      if (!this.player) throw new Error("Player not found");
+
+      this.physics.add.overlap(this.player, chest, (_, obj2) => {
+        obj2.destroy();
+        this.cameras.main.flash();
+      });
+    });
   }
 }

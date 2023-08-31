@@ -334,9 +334,68 @@
          "width":100,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":10,
+         "name":"Chests",
+         "objects":[
+                {
+                 "height":0,
+                 "id":1,
+                 "name":"ChestPoint",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":315.89503593515,
+                 "y":201.571118168143
+                }, 
+                {
+                 "height":0,
+                 "id":2,
+                 "name":"ChestPoint",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":489.052314892195,
+                 "y":198.228313555073
+                }, 
+                {
+                 "height":0,
+                 "id":3,
+                 "name":"ChestPoint",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":648.504094935651,
+                 "y":296.172488718034
+                }, 
+                {
+                 "height":0,
+                 "id":4,
+                 "name":"ChestPoint",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":646.164131706502,
+                 "y":121.343807454454
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":7,
- "nextobjectid":1,
+ "nextlayerid":11,
+ "nextobjectid":6,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",
@@ -13328,6 +13387,19 @@
                          "value":false
                         }]
                 }],
+         "tilewidth":16
+        }, 
+        {
+         "columns":33,
+         "firstgid":1441,
+         "image":"..\/..\/..\/..\/..\/..\/Downloads\/gfx\/objects.png",
+         "imageheight":320,
+         "imagewidth":528,
+         "margin":0,
+         "name":"objetcs",
+         "spacing":0,
+         "tilecount":660,
+         "tileheight":16,
          "tilewidth":16
         }],
  "tilewidth":16,
