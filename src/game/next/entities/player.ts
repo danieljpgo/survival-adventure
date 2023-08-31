@@ -1,6 +1,7 @@
 import { KeyboardInput } from "~/game/config/constants";
 import { Actor } from ".";
 import { ASSETS } from "../scenes";
+import { getKeyboardMoviment } from "~/game/config/keyboard";
 
 export const PLAYER = {
   SPEED: 100,
@@ -32,60 +33,45 @@ export class Player extends Actor {
     if (!this.cursors) throw new Error("Cursors not found");
 
     this.setVelocity(0);
-    if (
-      (this.cursors.up.isDown || this.cursors.w.isDown) &&
-      (this.cursors.left.isDown || this.cursors.a.isDown)
-    ) {
-      this.setVelocity(-PLAYER.SPEED, -PLAYER.SPEED);
-      this.anims.play("hero-walk-left", true);
-      return;
+    const moviment = getKeyboardMoviment(this.cursors);
+    switch (moviment) {
+      case "up-left":
+        this.setVelocity(-PLAYER.SPEED, -PLAYER.SPEED);
+        this.anims.play("hero-walk-left", true);
+        break;
+      case "up-right":
+        this.setVelocity(PLAYER.SPEED, -PLAYER.SPEED);
+        this.anims.play("hero-walk-right", true);
+        break;
+      case "down-right":
+        this.setVelocity(PLAYER.SPEED, PLAYER.SPEED);
+        this.anims.play("hero-walk-right", true);
+        break;
+      case "down-left":
+        this.setVelocity(-PLAYER.SPEED, PLAYER.SPEED);
+        this.anims.play("hero-walk-left", true);
+        break;
+      case "up":
+        this.setVelocityY(-PLAYER.SPEED);
+        this.anims.play("hero-walk-up", true);
+        break;
+      case "left":
+        this.setVelocityX(-PLAYER.SPEED);
+        this.anims.play("hero-walk-left", true);
+        break;
+      case "right":
+        this.setVelocityX(PLAYER.SPEED);
+        this.anims.play("hero-walk-right", true);
+        break;
+      case "down":
+        this.setVelocityY(PLAYER.SPEED);
+        this.anims.play("hero-walk-down", true);
+        break;
+      default:
+        const current = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+        this.anims.play(`hero-idle-${current}`, true);
+        break;
     }
-    if (
-      (this.cursors.up.isDown || this.cursors.w.isDown) &&
-      (this.cursors.right.isDown || this.cursors.d.isDown)
-    ) {
-      this.setVelocity(PLAYER.SPEED, -PLAYER.SPEED);
-      this.anims.play("hero-walk-right", true);
-      return;
-    }
-    if (
-      (this.cursors.right.isDown || this.cursors.d.isDown) &&
-      (this.cursors.down.isDown || this.cursors.s.isDown)
-    ) {
-      this.setVelocity(PLAYER.SPEED, PLAYER.SPEED);
-      this.anims.play("hero-walk-right", true);
-      return;
-    }
-    if (
-      (this.cursors.left.isDown || this.cursors.a.isDown) &&
-      (this.cursors.down.isDown || this.cursors.s.isDown)
-    ) {
-      this.setVelocity(-PLAYER.SPEED, PLAYER.SPEED);
-      this.anims.play("hero-walk-left", true);
-      return;
-    }
-    if (this.cursors.up.isDown || this.cursors.w.isDown) {
-      this.setVelocityY(-PLAYER.SPEED);
-      this.anims.play("hero-walk-up", true);
-      return;
-    }
-    if (this.cursors.left.isDown || this.cursors.a.isDown) {
-      this.setVelocityX(-PLAYER.SPEED);
-      this.anims.play("hero-walk-left", true);
-      return;
-    }
-    if (this.cursors.right.isDown || this.cursors.d.isDown) {
-      this.setVelocityX(PLAYER.SPEED);
-      this.anims.play("hero-walk-right", true);
-      return;
-    }
-    if (this.cursors.down.isDown || this.cursors.s.isDown) {
-      this.setVelocityY(PLAYER.SPEED);
-      this.anims.play("hero-walk-down", true);
-      return;
-    }
-    const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
-    this.anims.play(`hero-idle-${direction}`, true);
   }
 
   private initAnimations() {
