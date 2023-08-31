@@ -45,6 +45,7 @@ export class Game extends Phaser.Scene {
     const tileset = map.addTilesetImage("world", "tiles", 16, 16);
     if (!tileset) throw new Error("World tileset not found");
 
+    const base = map.createLayer("Base", tileset);
     const ground = map.createLayer("Ground", tileset);
     const walls = map.createLayer("Walls", tileset);
     if (!ground) throw new Error("Ground layer not found");
@@ -59,9 +60,9 @@ export class Game extends Phaser.Scene {
     this.hero.setKnives(this.knives);
     // const log = new Log(this, HERO.SPAWN.X, HERO.SPAWN.Y, "log");
     this.enemies = this.physics.add.group({ classType: Log });
-    this.enemies.get(50, 100, "log");
-    this.enemies.get(50, 100, "log");
-    this.enemies.get(50, 100, "log");
+    this.enemies.get(100, 100, "log");
+    this.enemies.get(100, 100, "log");
+    this.enemies.get(100, 100, "log");
 
     this.cameras.main.startFollow(this.hero);
     this.physics.add.collider(this.hero, walls);

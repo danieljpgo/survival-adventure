@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { KeyboardInput } from "../config/constants";
 
 export const HERO = {
-  SPAWN: { X: 100, Y: 60 },
+  SPAWN: { X: 150, Y: 150 },
   SPEED: 100,
   IFRAME_DURATION: 250,
   HEARTS: 3,

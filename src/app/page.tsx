@@ -6,9 +6,5 @@ const GameContainer = dynamic(() => import("./game"), {
 });
 
 export default function Home() {
-  return (
-    <main>
-      <GameContainer />
-    </main>
-  );
+  return <GameContainer />;
 }
