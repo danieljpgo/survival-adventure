@@ -16,10 +16,10 @@ export const HEALTH_STATE = {
 
 export class Hero extends Phaser.Physics.Arcade.Sprite {
   private iframe = 0;
+  private knives?: Phaser.Physics.Arcade.Group;
   private health: number = HERO.HEARTS * 4;
   private healthState: (typeof HEALTH_STATE)[keyof typeof HEALTH_STATE] =
     HEALTH_STATE.IDLE; //TODO improve naming
-  private knives?: Phaser.Physics.Arcade.Group;
 
   constructor(
     scene: Phaser.Scene,

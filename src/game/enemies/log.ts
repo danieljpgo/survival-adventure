@@ -3,7 +3,18 @@ import { type Direction, DIRECTION } from "../config/constants";
 
 export const LOG = { SPEED: 50 } as const;
 
+export const HEALTH_STATE = {
+  IDLE: "idle",
+  DAMAGE: "damage",
+  DEAD: "dead",
+} as const;
+
 export class Log extends Phaser.Physics.Arcade.Sprite {
+  private iframe = 0;
+  private health = 2;
+  private healthState: (typeof HEALTH_STATE)[keyof typeof HEALTH_STATE] =
+    HEALTH_STATE.IDLE; //TODO improve naming
+
   private direction: Direction = DIRECTION.DOWN;
   private event: Phaser.Events.EventEmitter;
   private timer: Phaser.Time.TimerEvent;
@@ -48,6 +59,20 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
 
   preUpdate(time: number, delta: number) {
     super.preUpdate(time, delta);
+    // console.log(this.healthState);
+    // console.log(this.health);
+    if (this.healthState === HEALTH_STATE.DEAD) {
+      return;
+    }
+
+    if (this.healthState === HEALTH_STATE.DAMAGE) {
+      this.iframe += delta;
+      if (this.iframe < 200) return;
+
+      this.healthState = HEALTH_STATE.IDLE;
+      this.setTint(0xffffff);
+      this.iframe = 0;
+    }
 
     switch (this.direction) {
       case DIRECTION.LEFT:
@@ -73,6 +98,10 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  update() {
+    console.log("abc");
+  }
+
   destroy(fromScene?: boolean) {
     this.timer.destroy();
     this.event.destroy();
@@ -86,20 +115,53 @@ export class Log extends Phaser.Physics.Arcade.Sprite {
     );
     this.direction = nextDirection ?? DIRECTION.RIGHT;
   }
+
+  handleDamage(
+    enemy: Phaser.Physics.Arcade.Sprite,
+    knife: Phaser.Physics.Arcade.Image
+  ) {
+    // Prevent taking damage if already taking damage
+    if (this.healthState === HEALTH_STATE.DAMAGE) return;
+
+    const knockback = {
+      x: enemy.x - knife.x,
+      y: enemy.y - knife.y,
+    };
+    const nextPosition = new Phaser.Math.Vector2(knockback.x, knockback.y)
+      .normalize()
+      .scale(200);
+
+    const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+    this.iframe = 0;
+    this.health = this.health - 1;
+
+    if (this.health > 0) {
+      this.anims.play(`log-idle-${direction}`, true);
+      this.healthState = HEALTH_STATE.DAMAGE;
+      this.setVelocity(nextPosition.x, nextPosition.y);
+      this.setTint(0xff0000);
+      return;
+    }
+
+    this.anims.play(`log-dead`, true);
+    this.healthState = HEALTH_STATE.DEAD;
+    this.setVelocity(0, 0);
+    this.setTint(0xffffff);
+  }
 }
 
 // TODO improve here
 export function createLogAnims(anims: Phaser.Animations.AnimationManager) {
-  // anims.create({
-  //   key: "log-dead",
-  //   frames: anims.generateFrameNames("log", {
-  //     start: 0,
-  //     end: 3,
-  //     prefix: "sleep-",
-  //     suffix: ".png",
-  //   }),
-  //   frameRate: 8,
-  // });
+  anims.create({
+    key: "log-dead",
+    frames: anims.generateFrameNames("log", {
+      start: 0,
+      end: 3,
+      prefix: "sleep-",
+      suffix: ".png",
+    }),
+    frameRate: 8,
+  });
 
   anims.create({
     key: "log-sleep",

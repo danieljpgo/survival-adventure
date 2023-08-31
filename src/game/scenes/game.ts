@@ -16,6 +16,10 @@ export class Game extends Phaser.Scene {
     super("game");
   }
 
+  init() {
+    console.log("init");
+  }
+
   preload() {
     if (!this.input.keyboard) throw new Error("Keyboard Input not found");
 
@@ -67,7 +71,7 @@ export class Game extends Phaser.Scene {
     this.physics.add.collider(
       this.knives,
       this.enemies,
-      this.handleKnifeEnemyCollision,
+      this.handleEnemyKnifeCollision,
       undefined,
       this
     );
@@ -88,6 +92,10 @@ export class Game extends Phaser.Scene {
     if (!this.cursors) throw new Error("Cursors not found");
 
     this.hero.update(this.cursors);
+  }
+
+  destroy() {
+    console.log("destroy");
   }
 
   private handleHeroEnemyCollision(
@@ -115,29 +123,49 @@ export class Game extends Phaser.Scene {
     if (!("x" in hero)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
   }
 
-  private handleKnifeEnemyCollision(
-    knives:
+  private handleEnemyKnifeCollision(
+    knife:
       | Phaser.Types.Physics.Arcade.GameObjectWithBody
       | Phaser.Tilemaps.Tile,
     enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
   ) {
-    if (!this.knives) throw new Error("knives not found");
-    if (!this.enemies) throw new Error("enemies not found");
     if (!("type" in enemy))
       throw new Error(
         "Enemy is not a Phaser.Types.Physics.Arcade.GameObjectWithBody"
       );
-    if (!("type" in knives))
-      throw new Error(
-        "knives is not a Phaser.Types.Physics.Arcade.GameObjectWithBody"
-      );
+    if (!("blendMode" in knife))
+      throw new Error("knives is not a Phaser.Physics.Arcade.Image");
 
-    this.knives.killAndHide(knives);
-    this.physics.world.remove(knives.body);
-    // enemy.play("log-dead");
-    // @TODO health system for enemies
-    this.enemies.killAndHide(enemy);
-    this.physics.world.remove(enemy.body);
+    const currentEnemy = enemy as Log;
+    currentEnemy.handleDamage(
+      currentEnemy,
+      knife as Phaser.Physics.Arcade.Image
+    );
+
+    // events.scene.emit(HUD.HERO_HEALTH_CHANGED, this.hero.getHealth);
+    // if (this.hero.getHealth === 0) {
+    //   this.heroEnemiesCollider?.destroy();
+    // }
+
+    // this.physics.world.remove(knife.body);
+    // this.physics.world.remove(enemy.body);
+    // this.knives.killAndHide(knife);
+    // this.enemies.killAndHide(enemy);
+    // this.time.addEvent({
+    //   delay: 2000,
+    //   loop: false,
+    //   callback: () => {
+    //     console.log("log entrou aqui");
+    //     this.physics.world.remove(knife.body);
+    //     this.physics.world.remove(enemy.body);
+    //     this.knives.killAndHide(knife);
+    //     this.enemies.killAndHide(enemy);
+    //   },
+    // });
+
+    // console.log(knife.body.Set);
+    // console.log(enemy);
+    // console.log(this.enemies);
 
     // enemy.on(
     //   Phaser.Animations.Events.ANIMATION_COMPLETE_KEY,
