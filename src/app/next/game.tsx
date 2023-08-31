@@ -14,6 +14,7 @@ export default function GameContainer() {
       parent: "game-container",
       scene: [Preloader, Game],
       scale: {
+        zoom: 3,
         mode: Phaser.Scale.ScaleModes.NONE,
         width: window.innerWidth,
         height: window.innerHeight,

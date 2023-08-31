@@ -17,7 +17,12 @@ export class Preloader extends Phaser.Scene {
 
   preload() {
     this.load.baseURL = "assets/";
-    this.load.image(ASSETS.HERO.KEY, "character/hero.png");
+    this.load.atlas(
+      ASSETS.HERO.KEY,
+      "character/hero.png",
+      "character/hero.json"
+    );
+    // this.load.image(ASSETS.HERO.KEY, "character/hero.png");
   }
 
   create() {
