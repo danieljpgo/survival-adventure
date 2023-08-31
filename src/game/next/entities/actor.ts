@@ -1,7 +1,11 @@
 import Phaser from "phaser";
 
+const ACTOR = {
+  HP: 100,
+} as const;
+
 export class Actor extends Phaser.Physics.Arcade.Sprite {
-  protected hp = 100;
+  protected hp: number = ACTOR.HP;
 
   constructor(
     scene: Phaser.Scene,

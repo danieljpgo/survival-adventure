@@ -1,11 +1,11 @@
 import { KeyboardInput } from "~/game/config/constants";
+import { getKeyboardMoviment } from "~/game/config/keyboard";
 import { Actor } from ".";
 import { ASSETS } from "../scenes";
-import { getKeyboardMoviment } from "~/game/config/keyboard";
 
 export const PLAYER = {
   SPEED: 100,
-};
+} as const;
 
 export class Player extends Actor {
   private cursors?: Record<KeyboardInput, Phaser.Input.Keyboard.Key>;

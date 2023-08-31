@@ -41,8 +41,8 @@ export class Game extends Phaser.Scene {
     createHeroAnims(this.anims);
     createLogAnims(this.anims);
 
-    const map = this.make.tilemap({ key: "world" });
-    const tileset = map.addTilesetImage("world", "tiles", 16, 16);
+    const map = this.make.tilemap({ key: "overworld" });
+    const tileset = map.addTilesetImage("overworld", "tiles", 16, 16);
     if (!tileset) throw new Error("World tileset not found");
 
     const base = map.createLayer("Base", tileset);
