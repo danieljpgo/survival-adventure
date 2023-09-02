@@ -28,3 +28,7 @@ export const KEYBOARD_INPUT = {
   SPACE: "space",
   SHIFT: "shift",
 } as const;
+
+export const EVENTS = {
+  CHEST_LOOT: "chest-loot",
+} as const;

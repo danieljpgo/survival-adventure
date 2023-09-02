@@ -1,6 +1,6 @@
 import { Text } from ".";
 
-const SCORE = {
+export const SCORE = {
   ACTIONS: {
     INCREASE: "increase",
     DECREASE: "decrease",
@@ -38,6 +38,7 @@ export class Score extends Text {
       default:
         throw new Error(`Unhandled action type: ${action}`);
     }
+    console.log(this.value);
     this.setText(`Score: ${this.value}`);
   }
 }

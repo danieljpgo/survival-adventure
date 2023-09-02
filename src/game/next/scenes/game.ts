@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { Player } from "../entities";
 import { ASSETS } from ".";
 import { debug } from "~/lib/debug";
+import { EVENTS } from "~/game/config/constants";
 
 export const GAME = {
   KEY: "game",
@@ -76,8 +77,9 @@ export class Game extends Phaser.Scene {
       if (!this.player) throw new Error("Player not found");
 
       this.physics.add.overlap(this.player, chest, (_, obj2) => {
-        obj2.destroy();
+        this.game.events.emit(EVENTS.CHEST_LOOT);
         this.cameras.main.flash();
+        obj2.destroy();
       });
     });
   }
