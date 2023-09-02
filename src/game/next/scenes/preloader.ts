@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { GAME } from ".";
+import { HUD, GAME } from ".";
 
 export const PRELOADER = {
   KEY: "preloader",
@@ -46,5 +46,6 @@ export class Preloader extends Phaser.Scene {
 
   create() {
     this.scene.start(GAME.KEY);
+    this.scene.start(HUD.KEY);
   }
 }

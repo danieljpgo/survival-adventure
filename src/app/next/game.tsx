@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Phaser from "phaser";
-import { Preloader, Game } from "~/game//next/scenes";
+import { Preloader, Game, Hud } from "~/game/next/scenes";
 
 export default function GameContainer() {
   useEffect(() => {
@@ -12,7 +12,7 @@ export default function GameContainer() {
       title: "Survival Adventure",
       type: Phaser.WEBGL,
       parent: "game-container",
-      scene: [Preloader, Game],
+      scene: [Preloader, Game, Hud],
       scale: {
         zoom: 1,
         mode: Phaser.Scale.ScaleModes.NONE,
