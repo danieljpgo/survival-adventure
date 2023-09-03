@@ -94,7 +94,7 @@ export class Game extends Phaser.Scene {
     if (!this.player) throw new Error("Player not found");
 
     this.cameras.main.setSize(this.game.scale.width, this.game.scale.height);
-    this.cameras.main.startFollow(this.player, false, 0.09, 0.09);
+    this.cameras.main.startFollow(this.player, false, 1, 1);
     this.cameras.main.setZoom(2);
   }
 

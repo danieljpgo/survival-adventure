@@ -2,6 +2,7 @@ import { KeyboardInput } from "~/game/config/constants";
 import { getKeyboardMoviment } from "~/game/config/keyboard";
 import { Actor } from ".";
 import { ASSETS } from "../scenes";
+import { Text } from "../ui";
 
 export const PLAYER = {
   SPEED: 100,
@@ -9,6 +10,7 @@ export const PLAYER = {
 
 export class Player extends Actor {
   private cursors?: Record<KeyboardInput, Phaser.Input.Keyboard.Key>;
+  private hpLabel?: Text;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, ASSETS.HERO.KEY);
@@ -26,13 +28,19 @@ export class Player extends Actor {
       k: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.K),
     };
     this.body.setSize(this.width, this.height - this.height / 2);
+    this.hpLabel = new Text(this.scene, this.x, this.y, this.hp.toString())
+      .setFontSize(10)
+      .setOrigin(0.5, 1.5);
     this.initAnimations();
   }
 
   update() {
     if (!this.cursors) throw new Error("Cursors not found");
+    if (!this.hpLabel) throw new Error("hpLabel not found");
 
+    this.hpLabel.setPosition(this.x, this.y).setOrigin(0.5, 1.5);
     this.setVelocity(0);
+
     const moviment = getKeyboardMoviment(this.cursors);
     switch (moviment) {
       case "up-left":
@@ -177,5 +185,12 @@ export class Player extends Actor {
       }),
       frameRate: 2,
     });
+  }
+
+  public handleDamage(damage?: number) {
+    super.handleDamage(damage);
+    if (!this.hpLabel) throw new Error("HP Label not found");
+
+    this.hpLabel.setText(this.hp.toString());
   }
 }
