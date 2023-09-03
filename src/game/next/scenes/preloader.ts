@@ -17,10 +17,12 @@ export const ASSETS = {
       GROUND: "Ground",
       WALLS: "Walls",
       CHESTS: "Chests",
+      ENEMIES: "Enemies",
     },
   },
   POINTS: {
     CHESTS: "ChestPoint",
+    ENEMIES: "EnemyPoint",
   },
 } as const;
 
