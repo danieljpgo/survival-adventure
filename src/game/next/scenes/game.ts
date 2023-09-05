@@ -1,9 +1,9 @@
 import Phaser from "phaser";
+import { EVENTS } from "~/game/config/constants";
+import { debug } from "~/lib/debug";
+import { Enemy } from "../entities/enemy";
 import { Player } from "../entities";
 import { ASSETS } from ".";
-import { debug } from "~/lib/debug";
-import { EVENTS } from "~/game/config/constants";
-import { Enemy } from "../entities/enemy";
 
 export const GAME = {
   KEY: "game",
@@ -20,8 +20,8 @@ export class Game extends Phaser.Scene {
   create() {
     const map = this.initMap();
     this.player = new Player(this, 100, 100);
-    this.initChests(map.value);
     this.initCamera();
+    this.initChests(map.value);
     this.initEnemies(map.value, map.layer);
 
     this.physics.add.collider(this.player, map.layer.walls);
@@ -30,7 +30,7 @@ export class Game extends Phaser.Scene {
   update() {
     if (!this.player) throw new Error("Player not found");
 
-    this.player.update();
+    this.player.update(this);
   }
 
   private initMap() {
@@ -51,13 +51,21 @@ export class Game extends Phaser.Scene {
     if (!walls) throw new Error("Walls layer not found");
 
     walls.setCollisionByProperty({ collides: true });
-    walls.renderDebug(debug.graphics(this), debug.styles);
+    // walls.renderDebug(debug.graphics(this), debug.styles); /* Debug */
     this.physics.world.setBounds(0, 0, base.width, base.height);
 
     return {
       value: map,
       layer: { base, ground, walls },
     };
+  }
+
+  private initCamera() {
+    if (!this.player) throw new Error("Player not found");
+
+    this.cameras.main.setSize(this.game.scale.width, this.game.scale.height);
+    this.cameras.main.startFollow(this.player, false, 1, 1);
+    this.cameras.main.setZoom(2);
   }
 
   private initChests(map: Phaser.Tilemaps.Tilemap) {
@@ -90,18 +98,12 @@ export class Game extends Phaser.Scene {
     });
   }
 
-  private initCamera() {
-    if (!this.player) throw new Error("Player not found");
-
-    this.cameras.main.setSize(this.game.scale.width, this.game.scale.height);
-    this.cameras.main.startFollow(this.player, false, 1, 1);
-    this.cameras.main.setZoom(2);
-  }
-
   private initEnemies(
     map: Phaser.Tilemaps.Tilemap,
     layers: ReturnType<typeof this.initMap>["layer"]
   ) {
+    if (!this.player?.swordHitbox) throw new Error("Player not found");
+
     const enemiesPoints = map.filterObjects(
       ASSETS.TILEMAP.LAYERS.ENEMIES,
       (obj) => obj.name === ASSETS.POINTS.ENEMIES
@@ -124,10 +126,43 @@ export class Game extends Phaser.Scene {
 
     this.physics.add.collider(this.enemies, layers.walls);
     this.physics.add.collider(this.enemies, this.enemies);
-
-    if (!this.player) throw new Error("Player not found");
-    this.physics.add.collider(this.player, this.enemies, (obj1, _) => {
+    this.physics.add.collider(this.player, this.enemies, (obj1) => {
       (obj1 as Player).handleDamage(1);
     });
+    this.physics.add.overlap(
+      this.player.swordHitbox,
+      this.enemies,
+      this.handleSwordEnemyCollision,
+      undefined,
+      this
+    );
+  }
+
+  private handleSwordEnemyCollision(
+    sword:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
+    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
+  ) {
+    if (!("x" in sword))
+      throw new Error(
+        "Enemy is not a Phaser.Types.Physics.Arcade.GameObjectWithBody"
+      );
+    if (!("state" in enemy))
+      throw new Error(
+        "Enemy is not a Phaser.Types.Physics.Arcade.GameObjectWithBody"
+      );
+
+    const knockback = {
+      x: enemy.body.x - sword.x,
+      y: enemy.body.y - sword.y,
+    };
+    const nextPosition = new Phaser.Math.Vector2(knockback.x, knockback.y)
+      .normalize()
+      .scale(200);
+
+    const currentEnemy = enemy as Enemy;
+    currentEnemy.setVelocity(nextPosition.x, nextPosition.y);
+    currentEnemy.handleDamage(1);
   }
 }

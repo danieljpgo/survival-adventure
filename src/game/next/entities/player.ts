@@ -11,66 +11,45 @@ export const PLAYER = {
     IDLE: "idle",
     MOVIMENT: "moviment",
     ATTACK: "attack",
+    DEAD: "dead",
   },
 } as const;
 
 export class Player extends Actor {
-  private cursors?: Record<KeyboardInput, Phaser.Input.Keyboard.Key>;
-  private hpLabel?: Text;
   private cooldown = 0;
-
+  private hpLabel?: Text;
+  private cursors?: Record<KeyboardInput, Phaser.Input.Keyboard.Key>;
+  public swordHitbox?: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   public state: (typeof PLAYER.STATE)[keyof typeof PLAYER.STATE] =
     PLAYER.STATE.IDLE;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, ASSETS.HERO.KEY);
 
-    if (!this.body) throw new Error("Body not found");
-    if (!this.scene.input.keyboard) throw new Error("Body not found");
+    this.initAnimations();
+    this.initCursors();
+    this.initBody();
+    this.initSword(scene);
 
-    this.cursors = {
-      ...this.scene.input.keyboard.createCursorKeys(),
-      w: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      j: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.J),
-      k: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.K),
-    };
-    this.body.setSize(
-      this.width - this.width / 2,
-      this.height - this.height / 2
-    );
-    this.body.setOffset(0, +this.height / 4);
-
+    // @TODO add hearts
     this.hpLabel = new Text(this.scene, this.x, this.y, this.hp.toString())
       .setFontSize(10)
       .setOrigin(0.5, 1.5);
-    this.initAnimations();
-
-    // this.cursors.space.on("down", (event: KeyboardEvent) => {
-    // TODO Verificar se essa é a melhor implementação
-    // this.anims.play("hero-attack-down", true);
-    // this.scene.game.events.emit(EVENTS.PLAYER_ATTACK);
-    // });
   }
 
   protected preUpdate(time: number, delta: number): void {
     super.preUpdate(time, delta);
-    if (!this.cursors) throw new Error("Cursors not found");
     if (!this.body) throw new Error("Body not found");
 
     switch (this.state) {
       case PLAYER.STATE.ATTACK:
-        this.setTint(0x18ff);
         this.cooldown += delta;
+        // this.setTint(0x18ffff); /* Debug */
         if (this.cooldown < PLAYER.COOLDOWN) return;
-
-        this.setTint(0xffffff);
+        // this.setTint(0xffffff); /* Debug */
         this.state = PLAYER.STATE.IDLE;
         this.cooldown = 0;
         this.body.setOffset(0, +this.height / 4);
-
         break;
       case PLAYER.STATE.MOVIMENT:
       case PLAYER.STATE.IDLE:
@@ -79,23 +58,38 @@ export class Player extends Actor {
     }
   }
 
-  update() {
+  update(scene: Phaser.Scene) {
     if (!this.body) throw new Error("Body not found");
-    if (!this.cursors) throw new Error("Cursors not found");
     if (!this.hpLabel) throw new Error("hpLabel not found");
+    if (!this.cursors) throw new Error("Cursors not found");
+    if (!this.swordHitbox?.body) throw new Error("swordHitbox not found");
 
-    this.hpLabel.setPosition(this.x, this.y).setOrigin(0.5, 1.5);
     this.setVelocity(0);
+    this.hpLabel.setPosition(this.x, this.y).setOrigin(0.5, 1.5);
 
     // Prevent player to attack if is already attacking
-    if (this.state === PLAYER.STATE.ATTACK) return;
+    if (this.state === PLAYER.STATE.ATTACK) {
+      // Update hitbox position every frame
+      this.placeSwordHitbox();
+      return;
+    }
 
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
+    // Remove sword hitbox
+    scene.physics.world.remove(this.swordHitbox.body);
+    this.swordHitbox.visible = false;
+    this.swordHitbox.body.enable = false;
+
+    if (
+      Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
+      Phaser.Input.Keyboard.JustDown(this.cursors.j)
+    ) {
       this.state = PLAYER.STATE.ATTACK;
       const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
       this.anims.play(`hero-attack-${direction}`, true);
-
       this.body.setOffset(this.width / 4, this.height / 4);
+      scene.physics.world.add(this.swordHitbox.body);
+      // this.swordHitbox.visible = true; /* Debug */
+      this.placeSwordHitbox();
       return;
     }
 
@@ -139,6 +133,42 @@ export class Player extends Actor {
         this.anims.play(`hero-idle-${current}`, true);
         break;
     }
+  }
+
+  private initCursors() {
+    if (!this.scene.input.keyboard) throw new Error("Body not found");
+
+    this.cursors = {
+      ...this.scene.input.keyboard.createCursorKeys(),
+      w: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      a: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      s: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+      d: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+      j: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.J),
+      k: this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.K),
+    };
+  }
+
+  private initBody() {
+    if (!this.body) throw new Error("Body not found");
+
+    this.body.setSize(
+      this.width - this.width / 2,
+      this.height - this.height / 2
+    );
+    this.body.setOffset(0, +this.height / 4);
+  }
+
+  private initSword(scene: Phaser.Scene) {
+    this.swordHitbox = scene.add.rectangle(
+      this.x,
+      this.y,
+      16,
+      16,
+      0xffffff,
+      0
+    ) as unknown as Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+    scene.physics.add.existing(this.swordHitbox);
   }
 
   private initAnimations() {
@@ -295,6 +325,35 @@ export class Player extends Actor {
     });
   }
 
+  private placeSwordHitbox() {
+    if (!this.swordHitbox?.body) throw new Error("swordHitbox not found");
+
+    const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+    switch (direction) {
+      case "up":
+        this.swordHitbox.scaleX = 1.25;
+        this.swordHitbox.x = this.x;
+        this.swordHitbox.y = this.y - this.height / 4;
+        break;
+      case "right":
+        this.swordHitbox.scaleY = 1.25;
+        this.swordHitbox.x = this.x + this.height / 4;
+        this.swordHitbox.y = this.y;
+        break;
+      case "left":
+        this.swordHitbox.scaleY = 1.25;
+        this.swordHitbox.x = this.x - this.height / 4;
+        this.swordHitbox.y = this.y;
+        break;
+      case "down":
+      default:
+        this.swordHitbox.scaleX = 1.25;
+        this.swordHitbox.x = this.x;
+        this.swordHitbox.y = this.y + this.height / 4;
+        break;
+    }
+  }
+
   public handleDamage(damage?: number) {
     super.handleDamage(damage);
     if (!this.hpLabel) throw new Error("HP Label not found");
@@ -302,3 +361,31 @@ export class Player extends Actor {
     this.hpLabel.setText(this.hp.toString());
   }
 }
+
+// back do idle after animation finish if need
+// this.once(
+//   Phaser.Animations.Events.ANIMATION_COMPLETE_KEY +
+//     `hero-attack-${direction}`,
+//   () => {
+//     const current =
+//       this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+//     this.anims.play(`hero-idle-${current}`, true);
+
+//     console.log("abc");
+//   }
+// );
+
+// scene.physics.world.remove(this.swordHitbox.body);
+// this.swordHitbox.visible = false;
+// this.swordHitbox.body.enable = false;
+
+// scene.add.existing(this.swordHitbox);
+
+// this.cursors.space.on("down", (event: KeyboardEvent) => {
+// TODO Verificar se essa é a melhor implementação
+// this.anims.play("hero-attack-down", true);
+// this.scene.game.events.emit(EVENTS.PLAYER_ATTACK);
+// });
+
+// public swordHitbox?: Phaser.Physics.Arcade.Body;
+// private swordHitbox?: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody;
