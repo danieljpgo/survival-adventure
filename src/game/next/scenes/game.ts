@@ -1,7 +1,11 @@
 import Phaser from "phaser";
 import { EVENTS } from "~/game/config/constants";
-import { Enemy, initEnemyAnimations } from "../entities/enemy";
-import { Player, initPlayerAnimations } from "../entities";
+import {
+  Enemy,
+  Player,
+  initEnemyAnimations,
+  initPlayerAnimations,
+} from "../entities";
 import { ASSETS } from ".";
 // import { debug } from "~/lib/debug"; /* Debug */
 
@@ -22,12 +26,11 @@ export class Game extends Phaser.Scene {
     initPlayerAnimations(this.anims);
 
     const map = this.initMap();
-    this.player = new Player(this, 100, 100);
-    this.initCamera();
-    this.initChests(map.value);
-    this.initEnemies(map.value, map.layer);
 
-    this.physics.add.collider(this.player, map.layer.walls);
+    this.initPlayer(map.value, map.layer);
+    this.initEnemies(map.value, map.layer);
+    this.initChests(map.value);
+    this.initCamera();
   }
 
   update() {
@@ -63,6 +66,21 @@ export class Game extends Phaser.Scene {
     };
   }
 
+  private initPlayer(
+    map: Phaser.Tilemaps.Tilemap,
+    layers: ReturnType<typeof this.initMap>["layer"]
+  ) {
+    const spawnPoint = map.filterObjects(
+      ASSETS.TILEMAP.LAYERS.SPAWN,
+      (obj) => obj.name === ASSETS.POINTS.SPAWN
+    );
+    if (!spawnPoint?.[0]) throw new Error("SpawnPoint not found");
+    if (!spawnPoint[0].x || !spawnPoint[0].y)
+      throw new Error("SpawnPoint X/Y not found");
+
+    this.player = new Player(this, spawnPoint[0].x, spawnPoint[0].y);
+    this.physics.add.collider(this.player, layers.walls);
+  }
   private initCamera() {
     if (!this.player) throw new Error("Player not found");
 

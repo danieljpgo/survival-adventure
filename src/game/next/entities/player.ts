@@ -1,8 +1,8 @@
-import { KeyboardInput } from "~/game/config/constants";
 import { getKeyboardMoviment } from "~/game/config/keyboard";
-import { Actor } from ".";
+import { KeyboardInput } from "~/game/config/constants";
 import { ASSETS } from "../scenes";
 import { Text } from "../ui";
+import { Actor } from ".";
 
 export const PLAYER = {
   SPEED: 100,

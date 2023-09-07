@@ -19,11 +19,13 @@ export const ASSETS = {
       WALLS: "Walls",
       CHESTS: "Chests",
       ENEMIES: "Enemies",
+      SPAWN: "Spawn",
     },
   },
   POINTS: {
     CHESTS: "ChestPoint",
     ENEMIES: "EnemyPoint",
+    SPAWN: "SpawnPoint",
   },
 } as const;
 
