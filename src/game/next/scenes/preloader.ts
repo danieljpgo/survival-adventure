@@ -8,6 +8,7 @@ export const PRELOADER = {
 export const ASSETS = {
   BASE_URL: "assets/",
   HERO: { KEY: "hero" },
+  ENEMY: { KEY: "log" },
   TILES: { KEY: "tiles" },
   SPRITESHEET: { KEY: "spritesheet" },
   TILEMAP: {
@@ -32,7 +33,7 @@ export class Preloader extends Phaser.Scene {
   }
 
   preload() {
-    this.load.baseURL = "assets/";
+    this.load.baseURL = ASSETS.BASE_URL;
     this.load.tilemapTiledJSON(ASSETS.TILEMAP.KEY, "tiles/overworld.json");
     this.load.image(ASSETS.TILES.KEY, "tiles/overworld.png");
     this.load.spritesheet(ASSETS.SPRITESHEET.KEY, "tiles/objects.png", {
@@ -44,6 +45,7 @@ export class Preloader extends Phaser.Scene {
       "character/hero.png",
       "character/hero.json"
     );
+    this.load.atlas(ASSETS.ENEMY.KEY, "enemies/log.png", "enemies/log.json");
   }
 
   create() {

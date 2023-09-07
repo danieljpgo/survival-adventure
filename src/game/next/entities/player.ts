@@ -1,4 +1,4 @@
-import { EVENTS, KeyboardInput } from "~/game/config/constants";
+import { KeyboardInput } from "~/game/config/constants";
 import { getKeyboardMoviment } from "~/game/config/keyboard";
 import { Actor } from ".";
 import { ASSETS } from "../scenes";
@@ -7,6 +7,7 @@ import { Text } from "../ui";
 export const PLAYER = {
   SPEED: 100,
   COOLDOWN: 500,
+  HP: 12,
   STATE: {
     IDLE: "idle",
     MOVIMENT: "moviment",
@@ -24,9 +25,8 @@ export class Player extends Actor {
     PLAYER.STATE.IDLE;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, ASSETS.HERO.KEY);
+    super(scene, x, y, ASSETS.HERO.KEY, PLAYER.HP);
 
-    this.initAnimations();
     this.initCursors();
     this.initBody();
     this.initSword(scene);
@@ -171,160 +171,6 @@ export class Player extends Actor {
     scene.physics.add.existing(this.swordHitbox);
   }
 
-  private initAnimations() {
-    // idle
-    this.scene.anims.create({
-      key: "hero-idle-down",
-      frames: [{ key: "hero", frame: "walk-down-0.png" }],
-    });
-    this.scene.anims.create({
-      key: "hero-idle-up",
-      frames: [{ key: "hero", frame: "walk-up-0.png" }],
-    });
-    this.scene.anims.create({
-      key: "hero-idle-left",
-      frames: [{ key: "hero", frame: "walk-left-0.png" }],
-    });
-    this.scene.anims.create({
-      key: "hero-idle-right",
-      frames: [{ key: "hero", frame: "walk-right-0.png" }],
-    });
-
-    // walk
-    this.scene.anims.create({
-      key: "hero-walk-down",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 3,
-        prefix: "walk-down-",
-        suffix: ".png",
-      }),
-      repeat: -1,
-      frameRate: 8,
-    });
-    this.scene.anims.create({
-      key: "hero-walk-up",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 3,
-        prefix: "walk-up-",
-        suffix: ".png",
-      }),
-      repeat: -1,
-      frameRate: 8,
-    });
-    this.scene.anims.create({
-      key: "hero-walk-left",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 3,
-        prefix: "walk-left-",
-        suffix: ".png",
-      }),
-      repeat: -1,
-      frameRate: 8,
-    });
-    this.scene.anims.create({
-      key: "hero-walk-right",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 3,
-        prefix: "walk-right-",
-        suffix: ".png",
-      }),
-      repeat: -1,
-      frameRate: 8,
-    });
-
-    // attack
-    this.scene.anims.create({
-      key: "hero-attack-down",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 3,
-        prefix: "attack-down-",
-        suffix: ".png",
-      }),
-      // repeat: -1,
-      frameRate: 8,
-    });
-    this.scene.anims.create({
-      key: "hero-attack-up",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 3,
-        prefix: "attack-up-",
-        suffix: ".png",
-      }),
-      // repeat: -1,
-      frameRate: 8,
-    });
-    this.scene.anims.create({
-      key: "hero-attack-left",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 3,
-        prefix: "attack-left-",
-        suffix: ".png",
-      }),
-      // repeat: -1,
-      frameRate: 8,
-    });
-    this.scene.anims.create({
-      key: "hero-attack-right",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 3,
-        prefix: "attack-right-",
-        suffix: ".png",
-      }),
-      // repeat: -1,
-      frameRate: 8,
-    });
-
-    // dead
-    this.scene.anims.create({
-      key: "hero-dead-right",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 1,
-        prefix: "dead-right-",
-        suffix: ".png",
-      }),
-      frameRate: 2,
-    });
-    this.scene.anims.create({
-      key: "hero-dead-left",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 1,
-        prefix: "dead-left-",
-        suffix: ".png",
-      }),
-      frameRate: 2,
-    });
-    this.scene.anims.create({
-      key: "hero-dead-up",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 1,
-        prefix: "dead-up-",
-        suffix: ".png",
-      }),
-      frameRate: 2,
-    });
-    this.scene.anims.create({
-      key: "hero-dead-down",
-      frames: this.scene.anims.generateFrameNames("hero", {
-        start: 0,
-        end: 1,
-        prefix: "dead-down-",
-        suffix: ".png",
-      }),
-      frameRate: 2,
-    });
-  }
-
   private placeSwordHitbox() {
     if (!this.swordHitbox?.body) throw new Error("swordHitbox not found");
 
@@ -362,6 +208,162 @@ export class Player extends Actor {
   }
 }
 
+export function initPlayerAnimations(
+  anims: Phaser.Animations.AnimationManager
+) {
+  // idle
+  anims.create({
+    key: "hero-idle-down",
+    frames: [{ key: "hero", frame: "walk-down-0.png" }],
+  });
+  anims.create({
+    key: "hero-idle-up",
+    frames: [{ key: "hero", frame: "walk-up-0.png" }],
+  });
+  anims.create({
+    key: "hero-idle-left",
+    frames: [{ key: "hero", frame: "walk-left-0.png" }],
+  });
+  anims.create({
+    key: "hero-idle-right",
+    frames: [{ key: "hero", frame: "walk-right-0.png" }],
+  });
+
+  // walk
+  anims.create({
+    key: "hero-walk-down",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 3,
+      prefix: "walk-down-",
+      suffix: ".png",
+    }),
+    repeat: -1,
+    frameRate: 8,
+  });
+  anims.create({
+    key: "hero-walk-up",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 3,
+      prefix: "walk-up-",
+      suffix: ".png",
+    }),
+    repeat: -1,
+    frameRate: 8,
+  });
+  anims.create({
+    key: "hero-walk-left",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 3,
+      prefix: "walk-left-",
+      suffix: ".png",
+    }),
+    repeat: -1,
+    frameRate: 8,
+  });
+  anims.create({
+    key: "hero-walk-right",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 3,
+      prefix: "walk-right-",
+      suffix: ".png",
+    }),
+    repeat: -1,
+    frameRate: 8,
+  });
+
+  // attack
+  anims.create({
+    key: "hero-attack-down",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 3,
+      prefix: "attack-down-",
+      suffix: ".png",
+    }),
+    // repeat: -1,
+    frameRate: 8,
+  });
+  anims.create({
+    key: "hero-attack-up",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 3,
+      prefix: "attack-up-",
+      suffix: ".png",
+    }),
+    // repeat: -1,
+    frameRate: 8,
+  });
+  anims.create({
+    key: "hero-attack-left",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 3,
+      prefix: "attack-left-",
+      suffix: ".png",
+    }),
+    // repeat: -1,
+    frameRate: 8,
+  });
+  anims.create({
+    key: "hero-attack-right",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 3,
+      prefix: "attack-right-",
+      suffix: ".png",
+    }),
+    // repeat: -1,
+    frameRate: 8,
+  });
+
+  // dead
+  anims.create({
+    key: "hero-dead-right",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 1,
+      prefix: "dead-right-",
+      suffix: ".png",
+    }),
+    frameRate: 2,
+  });
+  anims.create({
+    key: "hero-dead-left",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 1,
+      prefix: "dead-left-",
+      suffix: ".png",
+    }),
+    frameRate: 2,
+  });
+  anims.create({
+    key: "hero-dead-up",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 1,
+      prefix: "dead-up-",
+      suffix: ".png",
+    }),
+    frameRate: 2,
+  });
+  anims.create({
+    key: "hero-dead-down",
+    frames: anims.generateFrameNames("hero", {
+      start: 0,
+      end: 1,
+      prefix: "dead-down-",
+      suffix: ".png",
+    }),
+    frameRate: 2,
+  });
+}
+
 // back do idle after animation finish if need
 // this.once(
 //   Phaser.Animations.Events.ANIMATION_COMPLETE_KEY +
@@ -384,7 +386,7 @@ export class Player extends Actor {
 // this.cursors.space.on("down", (event: KeyboardEvent) => {
 // TODO Verificar se essa é a melhor implementação
 // this.anims.play("hero-attack-down", true);
-// this.scene.game.events.emit(EVENTS.PLAYER_ATTACK);
+// game.events.emit(EVENTS.PLAYER_ATTACK);
 // });
 
 // public swordHitbox?: Phaser.Physics.Arcade.Body;

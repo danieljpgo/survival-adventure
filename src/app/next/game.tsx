@@ -21,7 +21,7 @@ export default function GameContainer() {
       },
       physics: {
         default: "arcade",
-        arcade: { debug: true },
+        // arcade: { debug: true },
       },
       render: {
         antialiasGL: false,

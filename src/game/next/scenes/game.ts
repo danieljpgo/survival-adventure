@@ -1,9 +1,9 @@
 import Phaser from "phaser";
 import { EVENTS } from "~/game/config/constants";
-import { debug } from "~/lib/debug";
-import { Enemy } from "../entities/enemy";
-import { Player } from "../entities";
+import { Enemy, initEnemyAnimations } from "../entities/enemy";
+import { Player, initPlayerAnimations } from "../entities";
 import { ASSETS } from ".";
+// import { debug } from "~/lib/debug"; /* Debug */
 
 export const GAME = {
   KEY: "game",
@@ -18,6 +18,9 @@ export class Game extends Phaser.Scene {
   }
 
   create() {
+    initEnemyAnimations(this.anims);
+    initPlayerAnimations(this.anims);
+
     const map = this.initMap();
     this.player = new Player(this, 100, 100);
     this.initCamera();
@@ -114,14 +117,9 @@ export class Game extends Phaser.Scene {
       if (!point.x || !point.y) throw new Error("EnemyPoints X/Y not found");
       if (!this.player) throw new Error("Player not found");
 
-      return new Enemy(
-        this,
-        point.x,
-        point.y,
-        ASSETS.SPRITESHEET.KEY,
-        this.player
-        // 503
-      ).setName(point.id.toString());
+      return new Enemy(this, point.x, point.y, this.player).setName(
+        point.id.toString()
+      );
     });
 
     this.physics.add.collider(this.enemies, layers.walls);

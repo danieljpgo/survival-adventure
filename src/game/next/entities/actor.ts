@@ -1,21 +1,23 @@
 import Phaser from "phaser";
 
 const ACTOR = {
-  HP: 100,
+  HP: 10,
 } as const;
 
 export class Actor extends Phaser.Physics.Arcade.Sprite {
-  protected hp: number = ACTOR.HP;
+  protected hp;
 
   constructor(
     scene: Phaser.Scene,
     x: number,
     y: number,
     texture: string | Phaser.Textures.Texture,
+    hp?: number,
     frame?: string | number
   ) {
     super(scene, x, y, texture, frame);
 
+    this.hp = hp ?? ACTOR.HP;
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setCollideWorldBounds(true); //@TODO maybe change to .body
