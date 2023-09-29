@@ -20,6 +20,7 @@ export class Player extends Actor {
   private cooldown = 0;
   private hpLabel?: Text;
   private cursors?: Record<KeyboardInput, Phaser.Input.Keyboard.Key>;
+  public knives?: Phaser.Physics.Arcade.Group;
   public swordHitbox?: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   public state: (typeof PLAYER.STATE)[keyof typeof PLAYER.STATE] =
     PLAYER.STATE.IDLE;
@@ -30,6 +31,7 @@ export class Player extends Actor {
     this.initCursors();
     this.initBody();
     this.initSword(scene);
+    this.initKnives(scene);
 
     // @TODO add hearts
     this.hpLabel = new Text(this.scene, this.x, this.y, this.hp.toString())
@@ -91,6 +93,39 @@ export class Player extends Actor {
       // this.swordHitbox.visible = true; /* Debug */
       this.placeSwordHitbox();
       return;
+    }
+
+    if (
+      Phaser.Input.Keyboard.JustDown(this.cursors.shift) ||
+      Phaser.Input.Keyboard.JustDown(this.cursors.k)
+    ) {
+      if (!this.knives) throw new Error("Hero body not found");
+
+      const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+      const vec = new Phaser.Math.Vector2(0, 0);
+      if (direction === "up") {
+        vec.y = -1;
+      }
+      if (direction === "down") {
+        vec.y = 1;
+      }
+      if (direction === "left") {
+        vec.x = -1;
+      }
+      if (direction === "right") {
+        vec.x = 1;
+      }
+
+      const angle = vec.angle();
+      const knife = this.knives.get(this.x, this.y, ASSETS.WEAPONS.KNIFE.KEY);
+
+      knife.setActive(true);
+      knife.setVisible(true);
+      knife.setRotation(angle);
+      knife.setVelocity(vec.x * 300, vec.y * 300);
+
+      knife.x = knife.x + vec.x * 8;
+      knife.y = knife.y + vec.y * 8;
     }
 
     const moviment = getKeyboardMoviment(this.cursors);
@@ -171,6 +206,14 @@ export class Player extends Actor {
     scene.physics.add.existing(this.swordHitbox);
   }
 
+  private initKnives(scene: Phaser.Scene) {
+    this.knives = scene.physics.add.group({
+      classType: Phaser.Physics.Arcade.Image,
+    });
+
+    scene.physics.add.collider(this.knives, this.knives);
+  }
+
   private placeSwordHitbox() {
     if (!this.swordHitbox?.body) throw new Error("swordHitbox not found");
 
@@ -205,6 +248,31 @@ export class Player extends Actor {
     if (!this.hpLabel) throw new Error("HP Label not found");
 
     this.hpLabel.setText(this.hp.toString());
+  }
+
+  public handleKnifeCollision(
+    knife: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
+  ) {
+    if (!knife) throw new Error("Knife is not a Arcade.Image");
+    const currentKnife = knife as Phaser.Physics.Arcade.Image;
+
+    currentKnife.scene.tweens.add({
+      targets: currentKnife,
+      duration: 300,
+      repeat: 3,
+      yoyo: true,
+      alpha: 0.5,
+      onStart: () => {},
+      onComplete: () => {
+        if (!currentKnife.body) return;
+        if (!this.knives) return;
+
+        currentKnife.body.enable = false;
+        this.knives.setAlpha(0);
+        this.knives.killAndHide(currentKnife);
+        this.knives.remove(currentKnife, true);
+      },
+    });
   }
 }
 

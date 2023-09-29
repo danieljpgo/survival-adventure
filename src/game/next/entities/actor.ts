@@ -31,15 +31,17 @@ export class Actor extends Phaser.Physics.Arcade.Sprite {
     this.scene.tweens.add({
       targets: this,
       duration: 100,
-      repeat: 3,
+      repeat: 1,
       yoyo: true,
       alpha: 0.5,
       onStart: () => {
         if (!damage) return;
 
+        this.setTint(0xff0000);
         this.hp = this.hp - damage;
       },
       onComplete: () => {
+        this.setTint(0xffffff);
         this.setAlpha(1);
       },
     });

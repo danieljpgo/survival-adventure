@@ -129,7 +129,6 @@ export class Enemy extends Actor {
       return;
     }
 
-    this.setTint(0xff0000);
     this.state = ENEMY.STATE.DAMAGE;
   }
 }

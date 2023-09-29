@@ -80,6 +80,23 @@ export class Game extends Phaser.Scene {
 
     this.player = new Player(this, spawnPoint[0].x, spawnPoint[0].y);
     this.physics.add.collider(this.player, layers.walls);
+
+    if (!this.player.knives) throw new Error("Knives not found");
+
+    this.physics.add.collider(
+      this.player.knives,
+      layers.walls,
+      this.player.handleKnifeCollision,
+      undefined,
+      this.player
+    );
+    this.physics.add.collider(
+      this.player.knives,
+      this.player.knives,
+      this.player.handleKnifeCollision,
+      undefined,
+      this.player
+    );
   }
   private initCamera() {
     if (!this.player) throw new Error("Player not found");
@@ -124,6 +141,7 @@ export class Game extends Phaser.Scene {
     layers: ReturnType<typeof this.initMap>["layer"]
   ) {
     if (!this.player?.swordHitbox) throw new Error("Player not found");
+    if (!this.player?.knives) throw new Error("Player not found");
 
     const enemiesPoints = map.filterObjects(
       ASSETS.TILEMAP.LAYERS.ENEMIES,
@@ -152,6 +170,13 @@ export class Game extends Phaser.Scene {
       undefined,
       this
     );
+    this.physics.add.overlap(
+      this.player.knives,
+      this.enemies,
+      this.handleEnemyKnifeCollision,
+      undefined,
+      this
+    );
   }
 
   private handleSwordEnemyCollision(
@@ -160,19 +185,10 @@ export class Game extends Phaser.Scene {
       | Phaser.Tilemaps.Tile,
     enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
   ) {
-    if (!("x" in sword))
-      throw new Error(
-        "Enemy is not a Phaser.Types.Physics.Arcade.GameObjectWithBody"
-      );
-    if (!("state" in enemy))
-      throw new Error(
-        "Enemy is not a Phaser.Types.Physics.Arcade.GameObjectWithBody"
-      );
+    if (!("x" in sword)) throw new Error("Sword is not a GameObjectWithBody");
+    if (!("state" in enemy)) throw new Error("Enemy is not a Tile");
 
-    const knockback = {
-      x: enemy.body.x - sword.x,
-      y: enemy.body.y - sword.y,
-    };
+    const knockback = { x: enemy.body.x - sword.x, y: enemy.body.y - sword.y };
     const nextPosition = new Phaser.Math.Vector2(knockback.x, knockback.y)
       .normalize()
       .scale(200);
@@ -180,5 +196,26 @@ export class Game extends Phaser.Scene {
     const currentEnemy = enemy as Enemy;
     currentEnemy.setVelocity(nextPosition.x, nextPosition.y);
     currentEnemy.handleDamage(1);
+  }
+
+  private handleEnemyKnifeCollision(
+    enemy:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
+    knife: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
+  ) {
+    if (!this.player) throw new Error("Player is not a found");
+    if (!("x" in knife)) throw new Error("Enemy is not a GameObjectWithBody");
+    if (!("state" in enemy)) throw new Error("Enemy is not a Tile");
+
+    const knockback = { x: enemy.body.x - knife.x, y: enemy.body.y - knife.y };
+    const nextPosition = new Phaser.Math.Vector2(knockback.x, knockback.y)
+      .normalize()
+      .scale(200);
+
+    const currentEnemy = enemy as Enemy;
+    currentEnemy.setVelocity(nextPosition.x, nextPosition.y);
+    currentEnemy.handleDamage(1);
+    this.player.handleKnifeCollision(knife);
   }
 }
