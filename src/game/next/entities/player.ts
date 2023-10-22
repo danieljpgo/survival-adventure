@@ -7,7 +7,8 @@ import { Actor } from ".";
 export const PLAYER = {
   SPEED: 100,
   COOLDOWN: 500,
-  HP: 12,
+  HP: 3 * 4,
+  HEARTS: 3,
   STATE: {
     IDLE: "idle",
     MOVIMENT: "moviment",

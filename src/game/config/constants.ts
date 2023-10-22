@@ -31,4 +31,5 @@ export const KEYBOARD_INPUT = {
 
 export const EVENTS = {
   CHEST_LOOT: "chest-loot",
+  PLAYER_HEALTH_CHANGED: "player-health-changed",
 } as const;

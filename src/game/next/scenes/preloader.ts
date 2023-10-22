@@ -6,10 +6,11 @@ export const PRELOADER = {
 } as const;
 
 export const ASSETS = {
-  BASE_URL: "assets/",
+  BASE_URL: "assets",
   HERO: { KEY: "hero" },
   ENEMY: { KEY: "log" },
   TILES: { KEY: "tiles" },
+  HEARTS: { KEY: "hearts" },
   SPRITESHEET: { KEY: "spritesheet" },
   WEAPONS: { KNIFE: { KEY: "knife" } },
   TILEMAP: {
@@ -37,23 +38,16 @@ export class Preloader extends Phaser.Scene {
 
   preload() {
     this.load.baseURL = ASSETS.BASE_URL;
-    this.load.tilemapTiledJSON(ASSETS.TILEMAP.KEY, "tiles/overworld.json");
-    this.load.image(ASSETS.TILES.KEY, "tiles/overworld.png");
-    this.load.image(ASSETS.WEAPONS.KNIFE.KEY, "weapons/knife.png");
-    this.load.spritesheet(ASSETS.SPRITESHEET.KEY, "tiles/objects.png", {
+    this.load.image(ASSETS.TILES.KEY, "/tiles/overworld.png");
+    this.load.image(ASSETS.WEAPONS.KNIFE.KEY, "/weapons/knife.png");
+    this.load.atlas(ASSETS.HERO.KEY,"/character/hero.png","/character/hero.json");
+    this.load.atlas(ASSETS.ENEMY.KEY, "/enemies/log.png", "/enemies/log.json");
+    this.load.atlas(ASSETS.HEARTS.KEY, "/hud/hearts.png", "/hud/hearts.json");
+    this.load.tilemapTiledJSON(ASSETS.TILEMAP.KEY, "/tiles/overworld.json");
+    this.load.spritesheet(ASSETS.SPRITESHEET.KEY, "/tiles/objects.png", {
       frameWidth: 16,
       frameHeight: 16,
     });
-    this.load.atlas(
-      ASSETS.HERO.KEY,
-      "character/hero.png",
-      "character/hero.json"
-    );
-    this.load.atlas(
-      ASSETS.ENEMY.KEY,
-      "enemies/log.png",
-      "enemies/log.json"
-    );
   }
 
   create() {

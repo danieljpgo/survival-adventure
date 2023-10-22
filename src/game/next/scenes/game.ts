@@ -161,7 +161,9 @@ export class Game extends Phaser.Scene {
     this.physics.add.collider(this.enemies, layers.walls);
     this.physics.add.collider(this.enemies, this.enemies);
     this.physics.add.collider(this.player, this.enemies, (obj1) => {
-      (obj1 as Player).handleDamage(1);
+      const currentPlayer = obj1 as Player;
+      currentPlayer.handleDamage(1);
+      this.game.events.emit(EVENTS.PLAYER_HEALTH_CHANGED, currentPlayer.getHP);
     });
     this.physics.add.overlap(
       this.player.swordHitbox,
