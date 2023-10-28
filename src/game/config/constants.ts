@@ -10,6 +10,7 @@ export const DIRECTION = {
   RIGHT: "right",
 } as const;
 
+// @TODO delete here
 export const HUD = {
   HERO_HEALTH_CHANGED: "hero-health-changed",
 };

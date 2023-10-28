@@ -48,39 +48,30 @@ export class Hud extends Phaser.Scene {
 
   private handlePlayerHealthChanged(health: number) {
     if (!this.hearts) throw new Error("Hearts has no children");
-
-    console.log(this.hearts);
-    console.log(health);
     this.hearts.children?.each((go, index) => {
-      // TODO Improve here
       const heart = go as Phaser.GameObjects.Sprite;
       const position = index + 1;
       const hearts = health / 4;
       const partialHeart = hearts % 1;
 
-      console.log({ heart });
-      console.log({ hearts });
-      console.log({ position });
-      console.log({ partialHeart });
-
       if (position - 1 > hearts) {
-        heart.setTexture("hud-hearts", "heart-0:4.png");
+        heart.setTexture(ASSETS.HEARTS.KEY, "heart-0:4.png");
         return null;
       }
       if (position > hearts && partialHeart === 0) {
-        heart.setTexture("hud-hearts", "heart-0:4.png");
+        heart.setTexture(ASSETS.HEARTS.KEY, "heart-0:4.png");
         return null;
       }
       if (position > hearts && partialHeart === 0.25) {
-        heart.setTexture("hud-hearts", "heart-1:4.png");
+        heart.setTexture(ASSETS.HEARTS.KEY, "heart-1:4.png");
         return null;
       }
       if (position > hearts && partialHeart === 0.5) {
-        heart.setTexture("hud-hearts", "heart-2:4.png");
+        heart.setTexture(ASSETS.HEARTS.KEY, "heart-2:4.png");
         return null;
       }
       if (position > hearts && partialHeart === 0.75) {
-        heart.setTexture("hud-hearts", "heart-3:4.png");
+        heart.setTexture(ASSETS.HEARTS.KEY, "heart-3:4.png");
         return null;
       }
 
