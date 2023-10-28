@@ -76,6 +76,7 @@ export class Enemy extends Actor {
         if (this.wakeUp < ENEMY.WAKE_UP) return;
 
         this.state = ENEMY.STATE.IDLE;
+        this.anims.play("log-wake-up", true);
       }
 
       // @TODO Improve here
@@ -112,17 +113,23 @@ export class Enemy extends Actor {
 
     if (this.state === ENEMY.STATE.SLEEP) return;
     const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
-    this.anims.play(`log-idle-${direction}`, true);
+
+    // @TODO FIX HERE
+    if (direction !== "sleep") {
+      this.anims.play(`log-idle-${direction}`, true);
+    }
     this.setVelocity(0);
   }
 
+  // @TODO fix callback
   public handleDamage(knockback: { x: number; y: number }, damage?: number) {
     // Prevent taking damage if already taking damage
     if (this.state === ENEMY.STATE.DAMAGE) return;
-    if (!this.hpLabel) throw new Error("HP Label not found");
 
-    super.handleDamage(knockback, damage);
-    this.hpLabel.setText(this.hp.toString());
+    super.handleDamage(knockback, damage, (hp) => {
+      if (!this.hpLabel) throw new Error("HP Label not found");
+      this.hpLabel.setText(this.hp.toString());
+    });
 
     if (this.hp === 0) {
       this.state = ENEMY.STATE.DEAD;

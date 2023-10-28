@@ -28,7 +28,11 @@ export class Actor extends Phaser.Physics.Arcade.Sprite {
   }
 
   // @TODO remove this knockback implementation
-  public handleDamage(knockback: { x: number; y: number }, damage?: number) {
+  public handleDamage(
+    knockback: { x: number; y: number },
+    damage?: number,
+    update?: (hp: number) => void
+  ) {
     this.scene.tweens.add({
       targets: this,
       duration: 100,
@@ -40,6 +44,7 @@ export class Actor extends Phaser.Physics.Arcade.Sprite {
 
         this.setTint(0xff0000);
         this.hp = this.hp - damage;
+        update?.(this.hp);
       },
       onComplete: () => {
         this.setTint(0xffffff);
