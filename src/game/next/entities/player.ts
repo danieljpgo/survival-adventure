@@ -9,8 +9,10 @@ export const PLAYER = {
   COOLDOWN: 500,
   HP: 3 * 4,
   HEARTS: 3,
+  IFRAME_DURATION: 250,
   STATE: {
     IDLE: "idle",
+    DAMAGE: "damage",
     MOVIMENT: "moviment",
     ATTACK: "attack",
     DEAD: "dead",
@@ -19,12 +21,14 @@ export const PLAYER = {
 
 export class Player extends Actor {
   private cooldown = 0;
-  private hpLabel?: Text;
   private cursors?: Record<KeyboardInput, Phaser.Input.Keyboard.Key>;
   public knives?: Phaser.Physics.Arcade.Group;
   public swordHitbox?: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
   public state: (typeof PLAYER.STATE)[keyof typeof PLAYER.STATE] =
     PLAYER.STATE.IDLE;
+  private iframe = 0;
+  // private healthState: (typeof PLAYER.STATE)[keyof typeof PLAYER.STATE] =
+  //   PLAYER.STATE.IDLE; //TODO improve naming
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, ASSETS.HERO.KEY, PLAYER.HP);
@@ -33,18 +37,20 @@ export class Player extends Actor {
     this.initBody();
     this.initSword(scene);
     this.initKnives(scene);
-
-    // @TODO add hearts
-    this.hpLabel = new Text(this.scene, this.x, this.y, this.hp.toString())
-      .setFontSize(10)
-      .setOrigin(0.5, 1.5);
   }
 
-  protected preUpdate(time: number, delta: number): void {
+  preUpdate(time: number, delta: number): void {
     super.preUpdate(time, delta);
-    if (!this.body) throw new Error("Body not found");
 
     switch (this.state) {
+      case PLAYER.STATE.DAMAGE:
+        this.iframe += delta;
+        if (this.iframe < PLAYER.IFRAME_DURATION) return;
+
+        this.state = PLAYER.STATE.IDLE;
+        this.setTint(0xffffff);
+        this.iframe = 0;
+        break;
       case PLAYER.STATE.ATTACK:
         this.cooldown += delta;
         // this.setTint(0x18ffff); /* Debug */
@@ -52,10 +58,12 @@ export class Player extends Actor {
         // this.setTint(0xffffff); /* Debug */
         this.state = PLAYER.STATE.IDLE;
         this.cooldown = 0;
+        if (!this.body) throw new Error("Body not found");
         this.body.setOffset(0, +this.height / 4);
         break;
       case PLAYER.STATE.MOVIMENT:
       case PLAYER.STATE.IDLE:
+      case PLAYER.STATE.DEAD:
       default:
         break;
     }
@@ -63,12 +71,15 @@ export class Player extends Actor {
 
   update(scene: Phaser.Scene) {
     if (!this.body) throw new Error("Body not found");
-    if (!this.hpLabel) throw new Error("hpLabel not found");
     if (!this.cursors) throw new Error("Cursors not found");
     if (!this.swordHitbox?.body) throw new Error("swordHitbox not found");
 
-    this.setVelocity(0);
-    this.hpLabel.setPosition(this.x, this.y).setOrigin(0.5, 1.5);
+    // Prevent movement when taking damage
+    if (this.state === PLAYER.STATE.DAMAGE) return;
+    // Prevent movement when hero is dead
+    if (this.state === PLAYER.STATE.DEAD) return;
+
+    this.setVelocity(0, 0);
 
     // Prevent player to attack if is already attacking
     if (this.state === PLAYER.STATE.ATTACK) {
@@ -167,6 +178,7 @@ export class Player extends Actor {
       default:
         const current = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
         this.anims.play(`hero-idle-${current}`, true);
+        this.setVelocity(0, 0);
         break;
     }
   }
@@ -244,11 +256,31 @@ export class Player extends Actor {
     }
   }
 
-  public handleDamage(damage?: number) {
-    super.handleDamage(damage);
-    if (!this.hpLabel) throw new Error("HP Label not found");
+  public handleDamage(knockback: { x: number; y: number }, damage?: number) {
+    if (this.state === PLAYER.STATE.DAMAGE) return;
 
-    this.hpLabel.setText(this.hp.toString());
+    super.handleDamage(knockback, damage);
+
+    const nextPosition = new Phaser.Math.Vector2(knockback.x, knockback.y)
+      .normalize()
+      .scale(200);
+
+    const direction = this.anims.currentAnim?.key.split("-").at(-1) ?? "down";
+    this.iframe = 0;
+    this.hp = this.hp - 1;
+
+    if (this.hp !== 0) {
+      this.anims.play(`hero-idle-${direction}`, true);
+      this.state = PLAYER.STATE.DAMAGE;
+      this.setVelocity(nextPosition.x, nextPosition.y);
+      this.setTint(0xff0000);
+      return;
+    }
+
+    this.anims.play(`hero-dead-${direction}`, true);
+    this.state = PLAYER.STATE.DEAD;
+    this.setVelocity(0, 0);
+    this.setTint(0xffffff);
   }
 
   public handleKnifeCollision(

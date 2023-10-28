@@ -116,12 +116,12 @@ export class Enemy extends Actor {
     this.setVelocity(0);
   }
 
-  public handleDamage(damage?: number) {
+  public handleDamage(knockback: { x: number; y: number }, damage?: number) {
     // Prevent taking damage if already taking damage
     if (this.state === ENEMY.STATE.DAMAGE) return;
     if (!this.hpLabel) throw new Error("HP Label not found");
 
-    super.handleDamage(damage);
+    super.handleDamage(knockback, damage);
     this.hpLabel.setText(this.hp.toString());
 
     if (this.hp === 0) {

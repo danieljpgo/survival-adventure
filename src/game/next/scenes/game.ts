@@ -160,9 +160,16 @@ export class Game extends Phaser.Scene {
 
     this.physics.add.collider(this.enemies, layers.walls);
     this.physics.add.collider(this.enemies, this.enemies);
-    this.physics.add.collider(this.player, this.enemies, (obj1) => {
-      const currentPlayer = obj1 as Player;
-      currentPlayer.handleDamage(1);
+    this.physics.add.collider(this.player, this.enemies, (player, enemy) => {
+      const currentPlayer = player as Player;
+      const currentEnemy = enemy as Enemy;
+
+      const knockback = {
+        x: currentPlayer.x - currentEnemy.x,
+        y: currentPlayer.y - currentEnemy.y,
+      };
+
+      currentPlayer.handleDamage(knockback, 1);
       this.game.events.emit(
         EVENTS.PLAYER_HEALTH_CHANGED,
         currentPlayer.getHP()
@@ -200,7 +207,7 @@ export class Game extends Phaser.Scene {
 
     const currentEnemy = enemy as Enemy;
     currentEnemy.setVelocity(nextPosition.x, nextPosition.y);
-    currentEnemy.handleDamage(1);
+    currentEnemy.handleDamage(knockback, 1);
   }
 
   private handleEnemyKnifeCollision(
@@ -220,7 +227,7 @@ export class Game extends Phaser.Scene {
 
     const currentEnemy = enemy as Enemy;
     currentEnemy.setVelocity(nextPosition.x, nextPosition.y);
-    currentEnemy.handleDamage(1);
+    currentEnemy.handleDamage(knockback, 1);
     this.player.handleKnifeCollision(knife);
   }
 }
