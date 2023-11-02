@@ -1,182 +1,233 @@
 import Phaser from "phaser";
-import { Log, createLogAnims } from "../enemies/log";
-import { Hero, createHeroAnims, HERO } from "../character/hero";
-import { debug } from "~/lib/debug";
-import { type KeyboardInput, HUD } from "../config/constants";
-import { events } from "../config/events";
+import { EVENTS } from "~/game/config/constants";
+import {
+  Enemy,
+  Player,
+  initEnemyAnimations,
+  initPlayerAnimations,
+} from "../entities";
+import { ASSETS } from ".";
+// import { debug } from "~/lib/debug"; /* Debug */
+
+export const GAME = {
+  KEY: "game",
+} as const;
 
 export class Game extends Phaser.Scene {
-  private cursors?: Record<KeyboardInput, Phaser.Input.Keyboard.Key>;
-  private hero?: Hero;
-  private heroEnemiesCollider?: Phaser.Physics.Arcade.Collider;
-  private enemies?: Phaser.Physics.Arcade.Group;
-  private knives?: Phaser.Physics.Arcade.Group;
+  private player?: Player;
+  private enemies?: Array<Enemy>;
 
   constructor() {
-    super("game");
-  }
-
-  init() {
-    console.log("init");
-  }
-
-  preload() {
-    if (!this.input.keyboard) throw new Error("Keyboard Input not found");
-
-    this.cursors = {
-      ...this.input.keyboard.createCursorKeys(),
-      w: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      a: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      s: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      d: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      j: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.J),
-      k: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K),
-    };
+    super(GAME.KEY);
   }
 
   create() {
-    this.scene.run("hud");
+    initEnemyAnimations(this.anims);
+    initPlayerAnimations(this.anims);
 
-    //TODO improve here
-    createHeroAnims(this.anims);
-    createLogAnims(this.anims);
+    const map = this.initMap();
 
-    const map = this.make.tilemap({ key: "overworld" });
-    const tileset = map.addTilesetImage("overworld", "tiles", 16, 16);
-    if (!tileset) throw new Error("World tileset not found");
+    this.initPlayer(map.value, map.layer);
+    this.initEnemies(map.value, map.layer);
+    this.initChests(map.value);
+    this.initCamera();
+  }
 
-    const base = map.createLayer("Base", tileset);
-    const ground = map.createLayer("Ground", tileset);
-    const walls = map.createLayer("Walls", tileset);
+  update() {
+    if (!this.player) throw new Error("Player not found");
+
+    this.player.update(this);
+  }
+
+  private initMap() {
+    const map = this.make.tilemap({ key: ASSETS.TILEMAP.KEY });
+    const tileset = map.addTilesetImage(
+      ASSETS.TILEMAP.KEY,
+      ASSETS.TILES.KEY,
+      16,
+      16
+    );
+    if (!tileset) throw new Error("Tileset not found");
+
+    const base = map.createLayer(ASSETS.TILEMAP.LAYERS.BASE, tileset, 0, 0);
+    const ground = map.createLayer(ASSETS.TILEMAP.LAYERS.GROUND, tileset, 0, 0);
+    const walls = map.createLayer(ASSETS.TILEMAP.LAYERS.WALLS, tileset, 0, 0);
+    if (!base) throw new Error("Base layer not found");
     if (!ground) throw new Error("Ground layer not found");
     if (!walls) throw new Error("Walls layer not found");
 
-    this.hero = new Hero(this, HERO.SPAWN.X, HERO.SPAWN.Y, "hero");
-    if (!this.hero.body) throw new Error("Hero body not found");
+    walls.setCollisionByProperty({ collides: true });
+    // walls.renderDebug(debug.graphics(this), debug.styles); /* Debug */
+    this.physics.world.setBounds(0, 0, base.width, base.height);
 
-    this.knives = this.physics.add.group({
-      classType: Phaser.Physics.Arcade.Image,
-    });
-    this.hero.setKnives(this.knives);
-    // const log = new Log(this, HERO.SPAWN.X, HERO.SPAWN.Y, "log");
-    this.enemies = this.physics.add.group({ classType: Log });
-    this.enemies.get(100, 100, "log");
-    this.enemies.get(100, 100, "log");
-    this.enemies.get(100, 100, "log");
+    return {
+      value: map,
+      layer: { base, ground, walls },
+    };
+  }
 
-    this.cameras.main.startFollow(this.hero);
-    this.physics.add.collider(this.hero, walls);
-    this.physics.add.collider(this.enemies, walls);
-    this.physics.add.collider(this.knives, walls);
-    this.physics.add.collider(this.knives, this.knives);
+  private initPlayer(
+    map: Phaser.Tilemaps.Tilemap,
+    layers: ReturnType<typeof this.initMap>["layer"]
+  ) {
+    const spawnPoint = map.filterObjects(
+      ASSETS.TILEMAP.LAYERS.SPAWN,
+      (obj) => obj.name === ASSETS.POINTS.SPAWN
+    );
+    if (!spawnPoint?.[0]) throw new Error("SpawnPoint not found");
+    if (!spawnPoint[0].x || !spawnPoint[0].y)
+      throw new Error("SpawnPoint X/Y not found");
+
+    this.player = new Player(this, spawnPoint[0].x, spawnPoint[0].y);
+    this.physics.add.collider(this.player, layers.walls);
+
+    if (!this.player.knives) throw new Error("Knives not found");
+
     this.physics.add.collider(
-      this.knives,
+      this.player.knives,
+      layers.walls,
+      this.player.handleKnifeCollision,
+      undefined,
+      this.player
+    );
+    this.physics.add.collider(
+      this.player.knives,
+      this.player.knives,
+      this.player.handleKnifeCollision,
+      undefined,
+      this.player
+    );
+  }
+  private initCamera() {
+    if (!this.player) throw new Error("Player not found");
+
+    this.cameras.main.setSize(this.game.scale.width, this.game.scale.height);
+    this.cameras.main.startFollow(this.player, false, 1, 1);
+    this.cameras.main.setZoom(2);
+  }
+
+  private initChests(map: Phaser.Tilemaps.Tilemap) {
+    const chestPoints = map.filterObjects(
+      ASSETS.TILEMAP.LAYERS.CHESTS,
+      (obj) => obj.name === ASSETS.POINTS.CHESTS
+    );
+    if (!chestPoints) throw new Error("ChestPoints not found");
+
+    const chests = chestPoints.map((point) => {
+      if (!point.x || !point.y) throw new Error("ChestPoints X/Y not found");
+
+      return this.physics.add.sprite(
+        point.x,
+        point.y,
+        ASSETS.SPRITESHEET.KEY,
+        0
+      );
+    });
+    if (!chests) throw new Error("Chests not found");
+
+    chests.forEach((chest) => {
+      if (!this.player) throw new Error("Player not found");
+
+      this.physics.add.overlap(this.player, chest, (_, obj2) => {
+        this.game.events.emit(EVENTS.CHEST_LOOT);
+        this.cameras.main.flash();
+        obj2.destroy();
+      });
+    });
+  }
+
+  private initEnemies(
+    map: Phaser.Tilemaps.Tilemap,
+    layers: ReturnType<typeof this.initMap>["layer"]
+  ) {
+    if (!this.player?.swordHitbox) throw new Error("Player not found");
+    if (!this.player?.knives) throw new Error("Player not found");
+
+    const enemiesPoints = map.filterObjects(
+      ASSETS.TILEMAP.LAYERS.ENEMIES,
+      (obj) => obj.name === ASSETS.POINTS.ENEMIES
+    );
+    if (!enemiesPoints) throw new Error("EnemyPoints not found");
+
+    this.enemies = enemiesPoints.map((point) => {
+      if (!point.x || !point.y) throw new Error("EnemyPoints X/Y not found");
+      if (!this.player) throw new Error("Player not found");
+
+      return new Enemy(this, point.x, point.y, this.player).setName(
+        point.id.toString()
+      );
+    });
+
+    this.physics.add.collider(this.enemies, layers.walls);
+    this.physics.add.collider(this.enemies, this.enemies);
+    this.physics.add.collider(this.player, this.enemies, (player, enemy) => {
+      const currentPlayer = player as Player;
+      const currentEnemy = enemy as Enemy;
+
+      const knockback = {
+        x: currentPlayer.x - currentEnemy.x,
+        y: currentPlayer.y - currentEnemy.y,
+      };
+
+      currentPlayer.handleDamage(knockback, 1);
+      this.game.events.emit(
+        EVENTS.PLAYER_HEALTH_CHANGED,
+        currentPlayer.getHP()
+      );
+    });
+    this.physics.add.overlap(
+      this.player.swordHitbox,
+      this.enemies,
+      this.handleSwordEnemyCollision,
+      undefined,
+      this
+    );
+    this.physics.add.overlap(
+      this.player.knives,
       this.enemies,
       this.handleEnemyKnifeCollision,
       undefined,
       this
     );
-    this.heroEnemiesCollider = this.physics.add.collider(
-      this.enemies,
-      this.hero,
-      this.handleHeroEnemyCollision,
-      undefined,
-      this
-    );
-
-    walls.setCollisionByProperty({ collides: true });
-    walls.renderDebug(debug.graphics(this), debug.styles);
   }
 
-  update(total: number, delta: number) {
-    if (!this.hero) throw new Error("Hero not found");
-    if (!this.cursors) throw new Error("Cursors not found");
-
-    this.hero.update(this.cursors);
-  }
-
-  destroy() {
-    console.log("destroy");
-  }
-
-  private handleHeroEnemyCollision(
-    hero: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
-  ) {
-    if (!this.hero) throw new Error("Hero not found");
-    if (!("x" in enemy)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
-    if (!("x" in hero)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
-
-    this.hero.handleDamage(hero, enemy);
-
-    events.scene.emit(HUD.HERO_HEALTH_CHANGED, this.hero.getHealth);
-    if (this.hero.getHealth === 0) {
-      this.heroEnemiesCollider?.destroy();
-    }
-  }
-
-  private handleKnifeWallsCollision(
-    hero: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
-  ) {
-    if (!this.hero) throw new Error("Hero not found");
-    if (!("x" in enemy)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
-    if (!("x" in hero)) throw new Error("Enemy is not a Phaser.Tilemaps.Tile");
-  }
-
-  private handleEnemyKnifeCollision(
-    knife:
+  private handleSwordEnemyCollision(
+    sword:
       | Phaser.Types.Physics.Arcade.GameObjectWithBody
       | Phaser.Tilemaps.Tile,
     enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
   ) {
-    if (!("type" in enemy))
-      throw new Error(
-        "Enemy is not a Phaser.Types.Physics.Arcade.GameObjectWithBody"
-      );
-    if (!("blendMode" in knife))
-      throw new Error("knives is not a Phaser.Physics.Arcade.Image");
+    if (!("x" in sword)) throw new Error("Sword is not a GameObjectWithBody");
+    if (!("state" in enemy)) throw new Error("Enemy is not a Tile");
 
-    const currentEnemy = enemy as Log;
-    currentEnemy.handleDamage(
-      currentEnemy,
-      knife as Phaser.Physics.Arcade.Image
-    );
+    const knockback = { x: enemy.body.x - sword.x, y: enemy.body.y - sword.y };
+    const nextPosition = new Phaser.Math.Vector2(knockback.x, knockback.y)
+      .normalize()
+      .scale(200);
 
-    // events.scene.emit(HUD.HERO_HEALTH_CHANGED, this.hero.getHealth);
-    // if (this.hero.getHealth === 0) {
-    //   this.heroEnemiesCollider?.destroy();
-    // }
+    const currentEnemy = enemy as Enemy;
+    currentEnemy.setVelocity(nextPosition.x, nextPosition.y);
+    currentEnemy.handleDamage(knockback, 1);
+  }
 
-    // this.physics.world.remove(knife.body);
-    // this.physics.world.remove(enemy.body);
-    // this.knives.killAndHide(knife);
-    // this.enemies.killAndHide(enemy);
-    // this.time.addEvent({
-    //   delay: 2000,
-    //   loop: false,
-    //   callback: () => {
-    //     console.log("log entrou aqui");
-    //     this.physics.world.remove(knife.body);
-    //     this.physics.world.remove(enemy.body);
-    //     this.knives.killAndHide(knife);
-    //     this.enemies.killAndHide(enemy);
-    //   },
-    // });
+  private handleEnemyKnifeCollision(
+    enemy:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
+    knife: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
+  ) {
+    if (!this.player) throw new Error("Player is not a found");
+    if (!("x" in knife)) throw new Error("Enemy is not a GameObjectWithBody");
+    if (!("state" in enemy)) throw new Error("Enemy is not a Tile");
 
-    // console.log(knife.body.Set);
-    // console.log(enemy);
-    // console.log(this.enemies);
+    const knockback = { x: enemy.body.x - knife.x, y: enemy.body.y - knife.y };
+    const nextPosition = new Phaser.Math.Vector2(knockback.x, knockback.y)
+      .normalize()
+      .scale(200);
 
-    // enemy.on(
-    //   Phaser.Animations.Events.ANIMATION_COMPLETE_KEY,
-    //   function (animation, frame) {
-    //     // Aqui você pode executar a ação que deseja após a animação
-    //     console.log("Animação completada! Executando a próxima ação.");
-    //     console.log({ animation, frame });
-    //     // Coloque sua próxima ação aqui
-    //   },
-    //   enemy
-    // );
+    const currentEnemy = enemy as Enemy;
+    currentEnemy.setVelocity(nextPosition.x, nextPosition.y);
+    currentEnemy.handleDamage(knockback, 1);
+    this.player.handleKnifeCollision(knife);
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 import Phaser from "phaser";
 import { useEffect } from "react";
-import { Preloader, Game, Hud } from "~/game/next/scenes";
+import { Preloader, Game, Hud } from "~/game/scenes";
 
 export default function GameContainer() {
   useEffect(() => {
@@ -12,8 +12,8 @@ export default function GameContainer() {
       type: Phaser.WEBGL,
       parent: "game-container",
       scene: [Preloader, Game, Hud],
-      // width: 460,
-      // height: 260,
+      width: 460,
+      height: 260,
       scale: {
         zoom: 1,
         // zoom: 3.5,

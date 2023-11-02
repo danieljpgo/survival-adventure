@@ -1,3 +1,3 @@
-export { Hud } from "./hud";
-export { Game } from "./game";
-export { Preloader } from "./preloader";
+export * from "./preloader";
+export * from "./game";
+export * from "./hud";

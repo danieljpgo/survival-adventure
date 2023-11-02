@@ -4,6 +4,8 @@ import { ASSETS } from "../scenes";
 import { Text } from "../ui";
 import { Actor } from ".";
 
+// SPAWN: { X: 150, Y: 150 },
+
 export const PLAYER = {
   SPEED: 100,
   COOLDOWN: 500,
@@ -45,17 +47,17 @@ export class Player extends Actor {
     switch (this.state) {
       case PLAYER.STATE.DAMAGE:
         this.iframe += delta;
+        this.setTint(0x18ff); /* Debug */
         if (this.iframe < PLAYER.IFRAME_DURATION) return;
-
         this.state = PLAYER.STATE.IDLE;
         this.setTint(0xffffff);
         this.iframe = 0;
         break;
       case PLAYER.STATE.ATTACK:
         this.cooldown += delta;
-        // this.setTint(0x18ffff); /* Debug */
+        this.setTint(0x18ffff); /* Debug */
         if (this.cooldown < PLAYER.COOLDOWN) return;
-        // this.setTint(0xffffff); /* Debug */
+        this.setTint(0xffffff); /* Debug */
         this.state = PLAYER.STATE.IDLE;
         this.cooldown = 0;
         if (!this.body) throw new Error("Body not found");

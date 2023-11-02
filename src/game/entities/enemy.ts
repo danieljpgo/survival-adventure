@@ -51,6 +51,8 @@ export class Enemy extends Actor {
 
     this.hpLabel.setPosition(this.x, this.y).setOrigin(0.5, 1.5);
 
+    if (this.state === ENEMY.STATE.DEAD) return;
+
     if (this.state === ENEMY.STATE.DAMAGE) {
       this.iframe += delta;
       if (this.iframe < ENEMY.IFRAME) return;
@@ -128,11 +130,26 @@ export class Enemy extends Actor {
 
     super.handleDamage(knockback, damage, (hp) => {
       if (!this.hpLabel) throw new Error("HP Label not found");
-      this.hpLabel.setText(this.hp.toString());
+      this.hpLabel.setText(hp.toString());
+      if (hp === 0) {
+        this.state = ENEMY.STATE.DEAD;
+        this.anims.play("log-wake-up", true);
+        this.setVelocity(0, 0);
+        this.setTint(0xffffff);
+        this.destroy();
+        this.hpLabel.destroy();
+        return;
+      }
     });
 
     if (this.hp === 0) {
+      alert("dead");
       this.state = ENEMY.STATE.DEAD;
+
+      this.anims.play("log-wake-up", true);
+      this.setVelocity(0, 0);
+      this.setTint(0xffffff);
+      this.destroy();
       return;
     }
 
