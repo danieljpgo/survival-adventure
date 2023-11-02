@@ -1,18 +1,5 @@
-export type Direction = (typeof DIRECTION)[keyof typeof DIRECTION];
-
 export type KeyboardInput =
   (typeof KEYBOARD_INPUT)[keyof typeof KEYBOARD_INPUT];
-
-export const DIRECTION = {
-  UP: "up",
-  DOWN: "down",
-  LEFT: "left",
-  RIGHT: "right",
-} as const;
-
-export const HUD = {
-  HERO_HEALTH_CHANGED: "hero-health-changed",
-};
 
 export const KEYBOARD_INPUT = {
   W: "w",
@@ -27,4 +14,9 @@ export const KEYBOARD_INPUT = {
   RIGHT: "right",
   SPACE: "space",
   SHIFT: "shift",
+} as const;
+
+export const EVENTS = {
+  CHEST_LOOT: "chest-loot",
+  PLAYER_HEALTH_CHANGED: "player-health-changed",
 } as const;
