@@ -45,6 +45,8 @@ export class Player extends Actor {
     super.preUpdate(time, delta);
 
     switch (this.state) {
+      case PLAYER.STATE.DEAD:
+        return;
       case PLAYER.STATE.DAMAGE:
         this.iframe += delta;
         this.setTint(0x18ff); /* Debug */
@@ -65,7 +67,7 @@ export class Player extends Actor {
         break;
       case PLAYER.STATE.MOVIMENT:
       case PLAYER.STATE.IDLE:
-      case PLAYER.STATE.DEAD:
+
       default:
         break;
     }
@@ -259,6 +261,7 @@ export class Player extends Actor {
   }
 
   public handleDamage(knockback: { x: number; y: number }, damage?: number) {
+    if (this.state === PLAYER.STATE.DEAD) return;
     if (this.state === PLAYER.STATE.DAMAGE) return;
 
     super.handleDamage(knockback, damage);
@@ -271,7 +274,7 @@ export class Player extends Actor {
     this.iframe = 0;
     this.hp = this.hp - 1;
 
-    if (this.hp !== 0) {
+    if (this.hp > 0) {
       this.anims.play(`hero-idle-${direction}`, true);
       this.state = PLAYER.STATE.DAMAGE;
       this.setVelocity(nextPosition.x, nextPosition.y);
@@ -283,6 +286,9 @@ export class Player extends Actor {
     this.state = PLAYER.STATE.DEAD;
     this.setVelocity(0, 0);
     this.setTint(0xffffff);
+
+    alert("YOU DIED");
+    window.location.reload();
   }
 
   public handleKnifeCollision(

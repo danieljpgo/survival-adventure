@@ -16,7 +16,6 @@ export default function GameContainer() {
       height: 260,
       scale: {
         zoom: 1,
-        // zoom: 3.5,
         mode: Phaser.Scale.ScaleModes.NONE,
         width: window.innerWidth / 2,
         height: window.innerHeight / 2,
