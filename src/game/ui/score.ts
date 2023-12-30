@@ -11,7 +11,7 @@ export const SCORE = {
 export class Score extends Text {
   private value: number;
   constructor(scene: Phaser.Scene, x: number, y: number, init = 0) {
-    super(scene, x, y, `Score: ${init}`);
+    super(scene, x, y, `Chests: ${init}/4`);
 
     scene.add.existing(this);
     this.value = init;
@@ -38,7 +38,6 @@ export class Score extends Text {
       default:
         throw new Error(`Unhandled action type: ${action}`);
     }
-    console.log(this.value);
-    this.setText(`Score: ${this.value}`);
+    this.setText(`Chests: ${this.value}/4`);
   }
 }

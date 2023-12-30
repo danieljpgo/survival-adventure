@@ -12,8 +12,6 @@ export default function GameContainer() {
       type: Phaser.WEBGL,
       parent: "game-container",
       scene: [Preloader, Game, Hud],
-      width: 460,
-      height: 260,
       scale: {
         zoom: 1,
         mode: Phaser.Scale.ScaleModes.NONE,
@@ -46,7 +44,7 @@ export default function GameContainer() {
     };
   }, []);
 
-  return <div id="game-container" />;
+  return <div id="game-container" className="grid place-items-center h-full" />;
 }
 
 // @TODO Resize

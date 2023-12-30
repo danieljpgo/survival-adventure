@@ -16,7 +16,7 @@ export class Hud extends Phaser.Scene {
   }
 
   create() {
-    this.score = new Score(this, 20, 20, 0);
+    this.score = new Score(this, 8, 26, 0);
     this.hearts = this.add.group({ classType: Phaser.GameObjects.Image });
     this.hearts.createMultiple({
       key: ASSETS.HEARTS.KEY,
@@ -43,7 +43,11 @@ export class Hud extends Phaser.Scene {
   private handleChestLoot() {
     if (!this.score) throw new Error("Score not found");
 
-    this.score.changeValue(SCORE.ACTIONS.INCREASE, 10);
+    this.score.changeValue(SCORE.ACTIONS.INCREASE, 1);
+    if (this.score.getValue() === 4) {
+      alert("you won!");
+      window.location.reload();
+    }
   }
 
   private handlePlayerHealthChanged(health: number) {

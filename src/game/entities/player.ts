@@ -274,7 +274,7 @@ export class Player extends Actor {
     this.iframe = 0;
     this.hp = this.hp - 1;
 
-    if (this.hp > 0) {
+    if (this.hp > 1) {
       this.anims.play(`hero-idle-${direction}`, true);
       this.state = PLAYER.STATE.DAMAGE;
       this.setVelocity(nextPosition.x, nextPosition.y);
